@@ -70,9 +70,10 @@ def main():
         with open(rate_params_path, 'w') as f:
             json.dump(rate_data, f, indent=2)
 
-        # subprocess.run(["bash", run_sh_path, "-n"],
-        #                cwd=heapsim_dir, check=True)
-
+        subprocess.run(["bash", "copy_saved_data.sh"],
+                       cwd=heapsim_dir, check=True)
+        subprocess.run(["bash", run_sh_path, "-n"],
+                       cwd=heapsim_dir, check=True)
         copy_heapsim_results(result_path, simulation_index, rate_data)
         simulation_index += 1
 
