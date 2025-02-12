@@ -30,10 +30,20 @@ def get_heapsim_paths():
     return heapsim_dir, run_sh_path, rate_params_path, result_path
 
 
-def copy_heapsim_results(simulation_index, rate_data):
+def copy_heapsim_results(result_path, simulation_index, rate_data):
     simulation_path = os.path.join(
         "heapsim_results", f"run_{simulation_index:03d}-k{rate_data['k_Cci1']}_phi{rate_data['phi_Cci1']}")
     os.makedirs(simulation_path, exist_ok=True)
+    overall_extraction_Cci = os.path.join(
+        result_path, "overall_extraction_Cci.csv")
+    overall_extraction_Bbr = os.path.join(
+        result_path, "overall_extraction_Bbr.csv")
+    if overall_extraction_Cci:
+        shutil.copy(overall_extraction_Cci, simulation_path)
+        print(f"overall_extraction_Cci.csv copied to {simulation_path}")
+    if overall_extraction_Bbr:
+        shutil.copy(overall_extraction_Bbr, simulation_path)
+        print(f"overall_extraction_Bbr.csv copied to {simulation_path}")
 
 
 def main():
@@ -45,10 +55,9 @@ def main():
 
     with open('Cci_sample.csv', 'r') as f:
         Cci1_sample = f.readlines()
-    
+
     simulation_index = 0
     for row in Cci1_sample[1:]:
-        print(simulation_index)
         row = row.strip().split(',')
         k_Cci1 = float(row[0])
         phi_Cci1 = float(row[1])
@@ -64,7 +73,7 @@ def main():
         # subprocess.run(["bash", run_sh_path, "-n"],
         #                cwd=heapsim_dir, check=True)
 
-        copy_heapsim_results(simulation_index, rate_data)
+        copy_heapsim_results(result_path, simulation_index, rate_data)
         simulation_index += 1
 
 
