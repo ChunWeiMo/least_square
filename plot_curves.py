@@ -13,15 +13,44 @@ def get_k_phi_from_folder(folder):
     return None, None
 
 
+def sum_of_square_error():
+    pass
+
+
+def calculate_duration(array):
+    iteration = len(array)
+    timestep = 180
+    duration = iteration * timestep / 86400
+    return duration
+
+
+def plot_extraction_curve(extraction_map_Cci):
+    extraction_map_Cci = pd.DataFrame(extraction_map_Cci)
+    filter_extraction = extraction_map_Cci[(
+        extraction_map_Cci["k"] == 1.0)]
+    print(filter_extraction)
+    Y = filter_extraction["extraction"].values
+
+    duration = calculate_duration(Y[0])
+    X = np.linspace(0, duration, len(Y[0]))
+    fig, ax = plt.subplots()
+    ax.set_xlabel("Days")
+    ax.set_ylabel("Extraction")
+    for curve in Y:
+        ax.plot(X, curve)
+    plt.show()
+
+
 def main():
-    heapsim_results = "heapsim_results"
-    heapsim_results = os.path.join(os.path.dirname(__file__), heapsim_results)
-    heapsim_results = os.path.abspath(heapsim_results)
+    heapsim_results_path = "heapsim_results"
+    heapsim_results_path = os.path.join(
+        os.path.dirname(__file__), heapsim_results_path)
+    heapsim_results_path = os.path.abspath(heapsim_results_path)
 
     extraction_map_Cci = list()
 
-    for folder in os.listdir(heapsim_results):
-        folder_path = os.path.join(heapsim_results, folder)
+    for folder in os.listdir(heapsim_results_path):
+        folder_path = os.path.join(heapsim_results_path, folder)
         csv_path = os.path.join(folder_path, "overall_extraction_Cci.csv")
         k, phi = get_k_phi_from_folder(folder)
         print(f"Processing k={k}, phi={phi}")
@@ -36,14 +65,7 @@ def main():
         extraction_map_Cci.append(
             {"k": k, "phi": phi, "extraction": extraction})
 
-    extraction_map_Cci = pd.DataFrame(extraction_map_Cci)
-    print(extraction_map_Cci)
-    filter_extraction = extraction_map_Cci[(extraction_map_Cci["phi"] == 1.0)]
-    print(filter_extraction)
-    y = filter_extraction["extraction"].values
-    for curve in y:
-        plt.plot(curve)
-    # plt.show()
+    plot_extraction_curve(extraction_map_Cci)
 
 
 if __name__ == "__main__":
