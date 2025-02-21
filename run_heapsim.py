@@ -2,6 +2,7 @@ import subprocess
 import os
 import json
 import shutil
+import time
 
 
 def get_heapsim_paths():
@@ -46,6 +47,15 @@ def copy_heapsim_results(result_path, simulation_index, rate_data):
         print(f"overall_extraction_Bbr.csv copied to {simulation_path}")
 
 
+def timer(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        func(*args, **kwargs)
+        end = time.time()
+        print(f"Execution time: {end - start:.2f} seconds")
+    return wrapper
+
+
 def main():
     heapsim_dir, run_sh_path, rate_params_path, result_path = get_heapsim_paths()
 
@@ -72,8 +82,9 @@ def main():
 
         subprocess.run(["bash", "copy_saved_data.sh"],
                        cwd=heapsim_dir, check=True)
-        subprocess.run(["bash", run_sh_path, "-n"],
-                       cwd=heapsim_dir, check=True)
+        timer(lambda: subprocess.run(["bash", run_sh_path],
+                                     cwd=heapsim_dir, check=True))()
+        
         copy_heapsim_results(result_path, simulation_index, rate_data)
         simulation_index += 1
 
