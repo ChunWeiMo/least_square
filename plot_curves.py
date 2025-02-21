@@ -36,8 +36,10 @@ def plot_extraction_curve(extraction_map_Cci):
     fig, ax = plt.subplots()
     ax.set_xlabel("Days")
     ax.set_ylabel("Extraction")
-    for curve in Y:
-        ax.plot(X, curve)
+
+    for curve, phi in zip(Y, filter_extraction["phi"].values):
+        ax.plot(X, curve, label=f"{phi}")
+        ax.legend()
     plt.show()
 
 
