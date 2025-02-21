@@ -1,1 +1,5 @@
 *.csv
+*.Identifier
+*.dat
+*.h5
+*.xlsx
