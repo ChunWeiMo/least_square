@@ -1,3 +1,6 @@
 {
-    "experiment_data_file":  "experiment_data-1ft.csv"
+    "data_point": "data_point.csv",
+    "data_numbers_to_fit": 10,
+    "polynomial_degree": 3,
+    "timestep": 60
 }
