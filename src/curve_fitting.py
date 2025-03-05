@@ -21,7 +21,7 @@ def calculate_x_axis(array, timestep=60):
 
 
 def sum_of_square_error(func, params):
-    with open("experiment_data-1ft-full.csv", "r") as f:
+    with open("../data/experiment_data/experiment_data-1ft-full.csv", "r") as f:
         experiment_data = pd.read_csv(f, header=None)
         experiment_data = experiment_data[0:3]
 
@@ -30,10 +30,16 @@ def sum_of_square_error(func, params):
 
     error = np.sum((y - experiment_data[1])**2)
     print(f"Sum of square error: {error}")
+    
+    fig, ax= plt.subplots()
+    ax.plot(x, y, label="Fitted curve")
+    ax.scatter(experiment_data[0], experiment_data[1], c="red", label="Experiment")
+    ax.legend()
+    plt.show()
 
 
 def main():
-    with open("curve_fitting_setting.json", "r") as f:
+    with open("../config/curve_fitting_setting.json", "r") as f:
         setting_json = json.load(f)
         data_point = setting_json["data_point"]
         data_number = setting_json["data_numbers_to_fit"]

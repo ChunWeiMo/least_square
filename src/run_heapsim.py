@@ -6,34 +6,37 @@ import time
 
 
 def get_heapsim_paths():
-    heapsim_dir = os.path.join(os.path.dirname(__file__), "../heapsim")
+    print("Getting HeapSim paths...")
+    heapsim_dir = os.path.join(os.path.dirname(__file__), "../../heapsim")
     heapsim_dir = os.path.abspath(heapsim_dir)
     if not os.path.exists(heapsim_dir):
-        raise FileNotFoundError(f"Error: {run_sh_path} not found!")
+        raise FileNotFoundError(f"Error: {heapsim_dir} not found!")
 
-    run_sh_path = os.path.join(os.path.dirname(__file__), "../heapsim/run.sh")
+    run_sh_path = os.path.join(os.path.dirname(
+        __file__), "../../heapsim/run.sh")
     run_sh_path = os.path.abspath(run_sh_path)
     if not os.path.exists(run_sh_path):
         raise FileNotFoundError(f"Error: {run_sh_path} not found!")
 
     rate_params_path = os.path.join(os.path.dirname(
-        __file__), "../heapsim/params/rate_parameters.json")
+        __file__), "../../heapsim/params/rate_parameters.json")
     rate_params_path = os.path.abspath(rate_params_path)
     if not os.path.exists(rate_params_path):
         raise FileNotFoundError(f"Error: {rate_params_path} not found!")
 
     result_path = os.path.join(os.path.dirname(
-        __file__), "../heapsim/results/CSV")
+        __file__), "../../heapsim/results/CSV")
     result_path = os.path.abspath(result_path)
     if result_path is None:
         raise FileNotFoundError(f"Error: {result_path} not found!")
 
+    print("HeapSim paths retrieved successfully!")
     return heapsim_dir, run_sh_path, rate_params_path, result_path
 
 
-def copy_heapsim_results(result_path, simulation_index, rate_data):
+def copy_heapsim_results(result_path, simulation_index, rate_data, all_heapsim_results_path):
     simulation_path = os.path.join(
-        "heapsim_results", f"run_{simulation_index:03d}-k{rate_data['k_Cci1']}_phi{rate_data['phi_Cci1']}")
+        all_heapsim_results_path, f"run_{simulation_index:03d}-k{rate_data['k_Cci1']}_phi{rate_data['phi_Cci1']}")
     os.makedirs(simulation_path, exist_ok=True)
     overall_extraction_Cci = os.path.join(
         result_path, "overall_extraction_Cci.csv")
@@ -59,12 +62,20 @@ def timer(func):
 def main():
     heapsim_dir, run_sh_path, rate_params_path, result_path = get_heapsim_paths()
 
-    if os.path.exists("heapsim_results"):
-        shutil.rmtree("heapsim_results")
-    os.makedirs("heapsim_results", exist_ok=True)
+    config_path = os.path.join(os.path.dirname(
+        __file__), "../config/run_heapsim.json")
 
-    with open('Cci_sample.csv', 'r') as f:
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+
+    with open(config['samples_file'], 'r') as f:
         Cci1_sample = f.readlines()
+
+    all_heapsim_results_path = os.path.join(
+        os.path.dirname(__file__), "../data/all_heapsim_results")
+    if os.path.exists(all_heapsim_results_path):
+        shutil.rmtree(all_heapsim_results_path)
+    os.makedirs(all_heapsim_results_path, exist_ok=True)
 
     simulation_index = 0
     for row in Cci1_sample[1:]:
@@ -84,8 +95,9 @@ def main():
                        cwd=heapsim_dir, check=True)
         timer(lambda: subprocess.run(["bash", run_sh_path],
                                      cwd=heapsim_dir, check=True))()
-        
-        copy_heapsim_results(result_path, simulation_index, rate_data)
+
+        copy_heapsim_results(result_path, simulation_index,
+                             rate_data, all_heapsim_results_path)
         simulation_index += 1
 
 

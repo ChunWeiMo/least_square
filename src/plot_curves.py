@@ -36,7 +36,7 @@ def plot_extraction_curve(extraction_map_Cci):
     ax.set_xlabel("Days")
     ax.set_ylabel("Extraction")
 
-    with open("experiment_data-1ft.csv", "r") as f:
+    with open("../data/experiment_data/experiment_data-1ft.csv", "r") as f:
         experiment_data = pd.read_csv(f, header=None)
         ax.scatter(experiment_data[0], experiment_data[1]
                    * 0.01, c="red", label="Experiment")
@@ -48,7 +48,7 @@ def plot_extraction_curve(extraction_map_Cci):
 
 
 def get_extraction_matrix():
-    heapsim_results_path = "heapsim_results"
+    heapsim_results_path = "../data/heapsim_results"
     heapsim_results_path = os.path.join(
         os.path.dirname(__file__), heapsim_results_path)
     heapsim_results_path = os.path.abspath(heapsim_results_path)

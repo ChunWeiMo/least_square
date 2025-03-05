@@ -1,5 +1,5 @@
 {
-    "data_point": "data_point.csv",
+    "data_point": "../data/test_curve_fitting/overall_extraction_Cci.csv",
     "data_numbers_to_fit": 10,
     "polynomial_degree": 3,
     "timestep": 60
