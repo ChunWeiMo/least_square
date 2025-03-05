@@ -34,7 +34,7 @@ def generate_input(*args, **kwargs):
 
 
 def main():
-    with open('config_input.json', 'r') as f:
+    with open('generate_input_config.json', 'r') as f:
         print("Reading input configuration...") 
         input_config = json.load(f)
 
