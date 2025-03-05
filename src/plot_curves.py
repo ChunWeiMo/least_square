@@ -3,6 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 import re
+import json
 
 
 def get_k_phi_from_folder(folder):
@@ -28,7 +29,7 @@ def plot_extraction_curve(extraction_map_Cci):
     extraction_map_Cci = pd.DataFrame(extraction_map_Cci)
     filter_extraction = extraction_map_Cci
     print(filter_extraction)
-    Y = filter_extraction["extraction"].values
+    Y = filter_extraction["Cu_extraction"].values
 
     duration = calculate_duration(Y[0])
     X = np.linspace(0, duration, len(Y[0]))
@@ -36,7 +37,10 @@ def plot_extraction_curve(extraction_map_Cci):
     ax.set_xlabel("Days")
     ax.set_ylabel("Extraction")
 
-    with open("../data/experiment_data/experiment_data-1ft.csv", "r") as f:
+    with open("../config/plot_curves.json", "r") as f:
+        plot_config = json.load(f)
+
+    with open(plot_config["experiment_data_file"], "r") as f:
         experiment_data = pd.read_csv(f, header=None)
         ax.scatter(experiment_data[0], experiment_data[1]
                    * 0.01, c="red", label="Experiment")
@@ -48,28 +52,37 @@ def plot_extraction_curve(extraction_map_Cci):
 
 
 def get_extraction_matrix():
-    heapsim_results_path = "../data/heapsim_results"
-    heapsim_results_path = os.path.join(
-        os.path.dirname(__file__), heapsim_results_path)
-    heapsim_results_path = os.path.abspath(heapsim_results_path)
+    all_heapsim_results = "../data/all_heapsim_results"
+    all_heapsim_results = os.path.join(
+        os.path.dirname(__file__), all_heapsim_results)
+    all_heapsim_results = os.path.abspath(all_heapsim_results)
 
     extraction_map = list()
 
-    for folder in os.listdir(heapsim_results_path):
-        folder_path = os.path.join(heapsim_results_path, folder)
-        csv_path = os.path.join(folder_path, "overall_extraction_Cci.csv")
+    for folder in os.listdir(all_heapsim_results):
+        folder_path = os.path.join(all_heapsim_results, folder)
+        Cci_csv_path = os.path.join(folder_path, "overall_extraction_Cci.csv")
+        Bbr_csv_path = os.path.join(folder_path, "overall_extraction_Bbr.csv")
         k, phi = get_k_phi_from_folder(folder)
         print(f"Processing k={k}, phi={phi}")
 
-        if not os.path.exists(csv_path):
+        if not os.path.exists(Cci_csv_path):
             raise FileNotFoundError(
-                f"Error: {csv_path} not found in {folder_path}!")
+                f"Error: {Cci_csv_path} not found in {folder_path}!")
 
-        with open(csv_path, "r") as f:
-            extraction = np.array([float(row.strip())
-                                  for row in f.readlines()])
+        if not os.path.exists(Bbr_csv_path):
+            raise FileNotFoundError(
+                f"Error: {Bbr_csv_path} not found in {folder_path}!")
+        
+        with open(Cci_csv_path, "r") as f:
+            Cci_extraction = np.array([float(row.strip())
+                                       for row in f.readlines()])
+        with open(Bbr_csv_path, "r") as f:
+            Bbr_extraction = np.array([float(row.strip())
+                                       for row in f.readlines()])
+        Cu_extraction = 0.4 * Cci_extraction + 0.6 * Bbr_extraction
         extraction_map.append(
-            {"k": k, "phi": phi, "extraction": extraction})
+            {"k": k, "phi": phi, "Cci_extraction": Cci_extraction, "Bbr_extraction": Bbr_extraction, "Cu_extraction": Cu_extraction})
     return extraction_map
 
 
