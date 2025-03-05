@@ -19,15 +19,14 @@ def sum_of_square_error():
 
 def calculate_duration(array):
     iteration = len(array)
-    timestep = 180
+    timestep = 60
     duration = iteration * timestep / 86400
     return duration
 
 
 def plot_extraction_curve(extraction_map_Cci):
     extraction_map_Cci = pd.DataFrame(extraction_map_Cci)
-    filter_extraction = extraction_map_Cci[(
-        extraction_map_Cci["k"] == 1.0)]
+    filter_extraction = extraction_map_Cci
     print(filter_extraction)
     Y = filter_extraction["extraction"].values
 
@@ -37,19 +36,24 @@ def plot_extraction_curve(extraction_map_Cci):
     ax.set_xlabel("Days")
     ax.set_ylabel("Extraction")
 
-    for curve, phi in zip(Y, filter_extraction["phi"].values):
-        ax.plot(X, curve, label=f"{phi}")
+    with open("experiment_data-1ft.csv", "r") as f:
+        experiment_data = pd.read_csv(f, header=None)
+        ax.scatter(experiment_data[0], experiment_data[1]
+                   * 0.01, c="red", label="Experiment")
+
+    for curve, k, phi in zip(Y, filter_extraction["k"].values, filter_extraction["phi"].values):
+        ax.plot(X, curve, label=f"k={k}, {phi}")
         ax.legend()
     plt.show()
 
 
-def main():
+def get_extraction_matrix():
     heapsim_results_path = "heapsim_results"
     heapsim_results_path = os.path.join(
         os.path.dirname(__file__), heapsim_results_path)
     heapsim_results_path = os.path.abspath(heapsim_results_path)
 
-    extraction_map_Cci = list()
+    extraction_map = list()
 
     for folder in os.listdir(heapsim_results_path):
         folder_path = os.path.join(heapsim_results_path, folder)
@@ -64,10 +68,14 @@ def main():
         with open(csv_path, "r") as f:
             extraction = np.array([float(row.strip())
                                   for row in f.readlines()])
-        extraction_map_Cci.append(
+        extraction_map.append(
             {"k": k, "phi": phi, "extraction": extraction})
+    return extraction_map
 
-    plot_extraction_curve(extraction_map_Cci)
+
+def main():
+    extraction_map = get_extraction_matrix()
+    plot_extraction_curve(extraction_map)
 
 
 if __name__ == "__main__":
