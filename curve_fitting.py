@@ -19,9 +19,24 @@ def calculate_x_axis(array, timestep=60):
     x = np.linspace(0, duration, len(array))
     return x
 
-def sum_of_square_error():
-    pass
-
+def sum_of_square_error(func, params):
+    with open("experiment_data-1ft-full.csv", "r") as f:
+        experiment_data = pd.read_csv(f, header=None)
+        experiment_data = experiment_data[0:3]
+    
+    x = experiment_data[0]
+    y = func(x, *params) * 100
+    
+    error = np.sum((y - experiment_data[1])**2)
+    print(f"Sum of square error: {error}")
+    
+    # fig, ax = plt.subplots()
+    # ax.scatter(x, y, c="red")
+    # ax.plot(x, experiment_data[1], c="blue")
+    # plt.show()
+    
+    
+        
 def main():
     with open("curve_fitting_setting.json", "r") as f:
         setting_json = json.load(f)
@@ -44,11 +59,8 @@ def main():
         initial_guess = [0]+[1]*degree
         params, _ = curve_fit(func_poly, x, data_point, p0=initial_guess)
         y = func_poly(x, *params)
-
-        fig, ax = plt.subplots()
-        ax.plot(x, y)
-        ax.scatter(x, data_point, c="red")
-        plt.show()
+        
+        sum_of_square_error(func_poly, params)
 
 
 if __name__ == '__main__':
