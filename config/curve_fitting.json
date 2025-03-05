@@ -1,6 +1,6 @@
 {
     "data_point": "../data/test_curve_fitting/overall_extraction_Cci.csv",
-    "data_numbers_to_fit": 10,
+    "data_numbers_to_fit": 20,
     "polynomial_degree": 3,
     "timestep": 60
 }
