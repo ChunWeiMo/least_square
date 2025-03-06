@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import numpy as np
 from plot_curves import get_extraction_matrix
+import os
 
 
 def func_poly(x, *coefficients):
@@ -32,7 +33,7 @@ def sum_of_square_error(func, params):
     return sse
 
 
-def calculate_all_sse(extraction_matrix, data_number, polynomial_degree, timestep):
+def calculate_all_sse(extraction_matrix, data_number, polynomial_degree, timestep, save_path=None, show_plot=False):
     for extraction in extraction_matrix:
         iterations = len(extraction["Cu_extraction"])
         step = iterations // data_number
@@ -49,27 +50,34 @@ def calculate_all_sse(extraction_matrix, data_number, polynomial_degree, timeste
         extraction["sse"] = sum_of_square_error(func_poly, params)
     df = pd.DataFrame(extraction_matrix)
 
-    fig, ax = plt.subplots()
-    ax.scatter(df["k"], df["sse"])
-    ax.set_xlabel("k")
-    ax.set_ylabel("Sum of square")
-    plt.show()
+    if save_path:
+        with open(save_path, "w") as f:
+            df.to_csv(f)
+    
+    if show_plot:
+        fig, ax = plt.subplots()
+        ax.scatter(df["k"], df["sse"])
+        ax.set_xlabel("k")
+        ax.set_ylabel("Sum of square")
+        plt.show()
 
 
 def main():
-    with open("../config/curve_fitting.json", "r") as f:
+    with open("../config/sum_of_square_error.json", "r") as f:
         setting_json = json.load(f)
         data_number = setting_json["data_numbers_to_fit"]
         polynomial_degree = setting_json["polynomial_degree"]
         timestep = setting_json["timestep"]
-
+        save_path = setting_json["save_path"]
+        save_path = os.path.abspath(save_path)
+        show_plot = setting_json["show_plot"]
     try:
         extraction_matrix = get_extraction_matrix()
     except Exception as e:
         print(f"Error: {e}")
     else:
         calculate_all_sse(extraction_matrix, data_number,
-                          polynomial_degree, timestep)
+                          polynomial_degree, timestep, save_path, show_plot)
 
 
 if __name__ == '__main__':
