@@ -7,12 +7,18 @@ from plot_curves import get_extraction_matrix
 import os
 
 
-def func_poly(x, *coefficients):
+def func_exp(x, a, b, c):
+    return a*np.exp(b*x) + c
+
+
+def func_poly(x: list, *coefficients) -> list:
     return sum([c*x**i for i, c in enumerate(coefficients)])
 
 
-def func_exp(x, a, b, c):
-    return a*np.exp(b*x) + c
+def curve_fitting_poly(x: list, y: list, degree: int) -> tuple:
+    initial_guess = [0] + [1] * degree
+    params, _ = curve_fit(func_poly, x, y, p0=initial_guess)
+    return params
 
 
 def calculate_x_axis(iterations, timestep=60):
@@ -27,9 +33,11 @@ def sum_of_square_error(func, params):
         experiment_data = experiment_data[0:3]
 
     x = experiment_data[0]
-    y = func(x, *params) * 100
+    y = func(x, *params)
+    print(f"y: {y}")
+    print(f"experiment_data: {experiment_data[1]*0.01}")
 
-    sse = np.sum((y - experiment_data[1])**2)
+    sse = np.sum((y - experiment_data[1]*0.01)**2)
     return sse
 
 
@@ -42,10 +50,7 @@ def calculate_all_sse(extraction_matrix, data_number, polynomial_degree, timeste
         x = x[::step]
         data_point = extraction["Cu_extraction"][::step]
 
-        degree = polynomial_degree
-        initial_guess = [0] + [1] * degree
-        params, _ = curve_fit(func_poly, x, data_point, p0=initial_guess)
-        y = func_poly(x, *params)
+        params = curve_fitting_poly(x, data_point, polynomial_degree)
 
         extraction["sse"] = sum_of_square_error(func_poly, params)
     df = pd.DataFrame(extraction_matrix)
@@ -53,7 +58,7 @@ def calculate_all_sse(extraction_matrix, data_number, polynomial_degree, timeste
     if save_path:
         with open(save_path, "w") as f:
             df.to_csv(f)
-    
+
     if show_plot:
         fig, ax = plt.subplots()
         ax.scatter(df["k"], df["sse"])
