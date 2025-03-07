@@ -1,0 +1,9 @@
+{
+    "data_file": "../data/sum_of_square_error/sse.csv",
+    "x": "k",
+    "y": "sse",
+    "bounds": [
+        10,
+        30
+    ]
+}
