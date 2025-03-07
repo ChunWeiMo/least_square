@@ -14,7 +14,7 @@ def get_data_point():
     except FileNotFoundError:
         print("Cannot find minimum.json")
         return
-    
+
     try:
         data_file = config["data_file"]
         x = config["x"]
@@ -49,6 +49,12 @@ def find_local_minimum(x, y, bounds):
     if minimum.success:
         print("Local minimum is found:")
         print(minimum.x)
+        plt.scatter(x, y, c="blue", label="model")
+        plt.scatter(x, func_poly(x, *params), c="red", label="fitted")
+        plt.scatter(minimum.x, func_poly(
+            minimum.x, *params), c="green", label="minimum")
+        plt.legend()
+        plt.show()
         return minimum.x
     else:
         print(f"Cannot find a local minimum in bounds")
