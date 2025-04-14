@@ -7,9 +7,10 @@ import json
 
 
 def get_k_phi_from_folder(folder):
-    match = re.search(r"-k([\d.]+)_phi([\d.]+)", folder)
+    match = re.search(r"-k([\d.]+)-phi([\d.]+)", folder)
     if match:
         k, phi = map(float, match.groups())
+        print(k, phi)
         return k, phi
     return None, None
 
@@ -20,7 +21,14 @@ def sum_of_square_error():
 
 def calculate_duration(array):
     iteration = len(array)
-    timestep = 60
+    try:
+        with open("../config/plot_curves.json", "r") as f:
+            plot_config = json.load(f)
+            timestep = plot_config["timestep"]
+    except (FileNotFoundError, KeyError):
+        print("Error: plot_curves.json file not found.")
+        print("Using default timestep of 60 seconds.")
+        timestep = 60
     duration = iteration * timestep / 86400
     return duration
 
@@ -73,7 +81,7 @@ def get_extraction_matrix():
         if not os.path.exists(Bbr_csv_path):
             raise FileNotFoundError(
                 f"Error: {Bbr_csv_path} not found in {folder_path}!")
-        
+
         with open(Cci_csv_path, "r") as f:
             Cci_extraction = np.array([float(row.strip())
                                        for row in f.readlines()])
