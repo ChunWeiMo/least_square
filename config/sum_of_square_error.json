@@ -1,8 +1,10 @@
 {
-    "data_point": "../data/test_curve_fitting/overall_extraction_Cci.csv",
+    "experiment_data_number": 6,
     "data_numbers_to_fit": 20,
-    "polynomial_degree": 3,
+    "polynomial_degree": 5,
     "timestep": 60,
     "save_path": "../data/sum_of_square_error/sse.csv",
-    "show_plot": true
+    "show_plot": true,
+    "_x_axis": "k",
+    "x_axis": "phi"
 }
