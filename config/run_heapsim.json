@@ -1,3 +1,7 @@
 {
-    "samples_file": "../data/samples/Cci_samples.csv"
+    "samples_file": "../data/samples/samples.csv",
+    "k":"k_Bbr",
+    "phi":"phi_Bbr",
+    "timestep_s" : 60,
+    "maxsteps_s": 100
 }

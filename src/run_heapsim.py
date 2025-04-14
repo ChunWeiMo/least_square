@@ -18,6 +18,12 @@ def get_heapsim_paths():
     if not os.path.exists(run_sh_path):
         raise FileNotFoundError(f"Error: {run_sh_path} not found!")
 
+    general_params_path = os.path.join(os.path.dirname(
+        __file__), "../../heapsim/params/general_parameters.json")
+    general_params_path = os.path.abspath(general_params_path)
+    if not os.path.exists(general_params_path):
+        raise FileNotFoundError(f"Error: {general_params_path} not found!")
+
     rate_params_path = os.path.join(os.path.dirname(
         __file__), "../../heapsim/params/rate_parameters.json")
     rate_params_path = os.path.abspath(rate_params_path)
@@ -31,12 +37,12 @@ def get_heapsim_paths():
         raise FileNotFoundError(f"Error: {result_path} not found!")
 
     print("HeapSim paths retrieved successfully!")
-    return heapsim_dir, run_sh_path, rate_params_path, result_path
+    return heapsim_dir, run_sh_path, general_params_path, rate_params_path, result_path
 
 
-def copy_heapsim_results(result_path, simulation_index, rate_data, all_heapsim_results_path):
+def copy_heapsim_results(result_path, simulation_index, rate_data, all_heapsim_results_path, k_species, phi_species):
     simulation_path = os.path.join(
-        all_heapsim_results_path, f"run_{simulation_index:03d}-k{rate_data['k_Cci1']}_phi{rate_data['phi_Cci1']}")
+        all_heapsim_results_path, f"run_{simulation_index:03d}-k{rate_data[k_species]}-phi{rate_data[phi_species]}")
     os.makedirs(simulation_path, exist_ok=True)
     overall_extraction_Cci = os.path.join(
         result_path, "overall_extraction_Cci.csv")
@@ -60,16 +66,18 @@ def timer(func):
 
 
 def main():
-    heapsim_dir, run_sh_path, rate_params_path, result_path = get_heapsim_paths()
+    heapsim_dir, run_sh_path, general_params_path, rate_params_path, result_path = get_heapsim_paths()
 
     config_path = os.path.join(os.path.dirname(
         __file__), "../config/run_heapsim.json")
 
     with open(config_path, 'r') as f:
         config = json.load(f)
+        k_species = config["k"]
+        phi_species = config["phi"]
 
     with open(config['samples_file'], 'r') as f:
-        Cci1_sample = f.readlines()
+        samples = f.readlines()
 
     all_heapsim_results_path = os.path.join(
         os.path.dirname(__file__), "../data/all_heapsim_results")
@@ -78,26 +86,41 @@ def main():
     os.makedirs(all_heapsim_results_path, exist_ok=True)
 
     simulation_index = 0
-    for row in Cci1_sample[1:]:
+    for row in samples[1:]:
         row = row.strip().split(',')
-        k_Cci1 = float(row[0])
-        phi_Cci1 = float(row[1])
+        k = float(row[0])
+        phi = float(row[1])
 
         with open(rate_params_path, 'r') as f:
             rate_data = json.load(f)
-        rate_data["k_Cci1"] = k_Cci1
-        rate_data["phi_Cci1"] = phi_Cci1
+        rate_data[k_species] = k
+        rate_data[phi_species] = phi
 
         with open(rate_params_path, 'w') as f:
             json.dump(rate_data, f, indent=2)
 
         subprocess.run(["bash", "copy_saved_data.sh"],
                        cwd=heapsim_dir, check=True)
+
+        with open(general_params_path, 'r') as f:
+            general_data = json.load(f)
+        general_data["timestep_s"] = 1
+        general_data["maxsteps_s"] = 60
+        with open(general_params_path, 'w') as f:
+            json.dump(general_data, f, indent=2)
+        
+        subprocess.run(["bash", run_sh_path], cwd=heapsim_dir, check=True)
+        
+        general_data["timestep_s"] = config["timestep_s"]
+        general_data["maxsteps_s"] = config["maxsteps_s"]
+        with open(general_params_path, 'w') as f:
+            json.dump(general_data, f, indent=2)
+        
         timer(lambda: subprocess.run(["bash", run_sh_path],
                                      cwd=heapsim_dir, check=True))()
-
+        
         copy_heapsim_results(result_path, simulation_index,
-                             rate_data, all_heapsim_results_path)
+                             rate_data, all_heapsim_results_path, k_species, phi_species)
         simulation_index += 1
 
 
