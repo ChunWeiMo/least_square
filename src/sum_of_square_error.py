@@ -30,19 +30,19 @@ def calculate_x_axis(iterations, timestep=60):
 def sum_of_square_error(func, params):
     with open("../data/experiment_data/experiment_data-1ft-full.csv", "r") as f:
         experiment_data = pd.read_csv(f, header=None)
-        experiment_data = experiment_data[0:3]
+        experiment_data = experiment_data[0:6]
 
     x = experiment_data[0]
+    print(f"x:\n{x}")
     y = func(x, *params)
-    print(f"y: {y}")
-    print(f"experiment_data: {experiment_data[1]*0.01}")
-
+    
     sse = np.sum((y - experiment_data[1]*0.01)**2)
     return sse
 
 
-def calculate_all_sse(extraction_matrix, data_number, polynomial_degree, timestep, save_path=None, show_plot=False):
+def calculate_all_sse(extraction_matrix, data_number, polynomial_degree, timestep, save_path, show_plot, x_axis):
     for extraction in extraction_matrix:
+        print(f"Processing k:{extraction['k']} phi: {extraction['phi']}")
         iterations = len(extraction["Cu_extraction"])
         step = iterations // data_number
         x = calculate_x_axis(iterations, timestep)
@@ -54,15 +54,15 @@ def calculate_all_sse(extraction_matrix, data_number, polynomial_degree, timeste
 
         extraction["sse"] = sum_of_square_error(func_poly, params)
     df = pd.DataFrame(extraction_matrix)
-
+    print(f"sse:\n{df['sse']}")
     if save_path:
         with open(save_path, "w") as f:
             df.to_csv(f)
 
     if show_plot:
         fig, ax = plt.subplots()
-        ax.scatter(df["k"], df["sse"])
-        ax.set_xlabel("k")
+        ax.scatter(df[x_axis], df["sse"])
+        ax.set_xlabel(f"{str(x_axis)}")
         ax.set_ylabel("Sum of square")
         plt.show()
 
@@ -76,13 +76,14 @@ def main():
         save_path = setting_json["save_path"]
         save_path = os.path.abspath(save_path)
         show_plot = setting_json["show_plot"]
+        x_axis = setting_json["x_axis"]
     try:
         extraction_matrix = get_extraction_matrix()
     except Exception as e:
         print(f"Error: {e}")
     else:
         calculate_all_sse(extraction_matrix, data_number,
-                          polynomial_degree, timestep, save_path, show_plot)
+                          polynomial_degree, timestep, save_path, show_plot, x_axis)
 
 
 if __name__ == '__main__':
