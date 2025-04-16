@@ -3,41 +3,43 @@ import os
 import json
 import shutil
 import time
+import logging
+import sys
+from pathlib import Path
 
 
-def get_heapsim_paths():
+def get_heapsim_paths() -> dict:
     print("Getting HeapSim paths...")
-    heapsim_dir = os.path.join(os.path.dirname(__file__), "../../heapsim")
-    heapsim_dir = os.path.abspath(heapsim_dir)
-    if not os.path.exists(heapsim_dir):
+    heapsim_paths = dict()
+
+    heapsim_dir = Path(__file__).parent.parent.parent.joinpath("heapsim")
+    if not heapsim_dir.exists():
         raise FileNotFoundError(f"Error: {heapsim_dir} not found!")
+    heapsim_paths["heapsim_dir"] = heapsim_dir
 
-    run_sh_path = os.path.join(os.path.dirname(
-        __file__), "../../heapsim/run.sh")
-    run_sh_path = os.path.abspath(run_sh_path)
-    if not os.path.exists(run_sh_path):
+    run_sh_path = heapsim_dir.joinpath("run.sh")
+    if not run_sh_path.exists():
         raise FileNotFoundError(f"Error: {run_sh_path} not found!")
+    heapsim_paths["run_sh_path"] = run_sh_path
 
-    general_params_path = os.path.join(os.path.dirname(
-        __file__), "../../heapsim/params/general_parameters.json")
-    general_params_path = os.path.abspath(general_params_path)
-    if not os.path.exists(general_params_path):
+    general_params_path = heapsim_dir.joinpath(
+        "params", "general_parameters.json")
+    if not general_params_path.exists():
         raise FileNotFoundError(f"Error: {general_params_path} not found!")
+    heapsim_paths["general_params_path"] = general_params_path
 
-    rate_params_path = os.path.join(os.path.dirname(
-        __file__), "../../heapsim/params/rate_parameters.json")
-    rate_params_path = os.path.abspath(rate_params_path)
-    if not os.path.exists(rate_params_path):
+    rate_params_path = heapsim_dir.joinpath("params", "rate_parameters.json")
+    if not rate_params_path.exists():
         raise FileNotFoundError(f"Error: {rate_params_path} not found!")
+    heapsim_paths["rate_params_path"] = rate_params_path
 
-    result_path = os.path.join(os.path.dirname(
-        __file__), "../../heapsim/results/CSV")
-    result_path = os.path.abspath(result_path)
-    if result_path is None:
+    result_path = heapsim_dir.joinpath("results", "CSV")
+    if not result_path.exists():
         raise FileNotFoundError(f"Error: {result_path} not found!")
+    heapsim_paths["result_path"] = result_path
 
     print("HeapSim paths retrieved successfully!")
-    return heapsim_dir, run_sh_path, general_params_path, rate_params_path, result_path
+    return heapsim_paths
 
 
 def copy_heapsim_results(result_path, simulation_index, rate_data, all_heapsim_results_path, k_species, phi_species):
@@ -66,10 +68,13 @@ def timer(func):
 
 
 def main():
-    heapsim_dir, run_sh_path, general_params_path, rate_params_path, result_path = get_heapsim_paths()
+    heapsim_paths = get_heapsim_paths()
 
-    config_path = os.path.join(os.path.dirname(
-        __file__), "../config/run_heapsim.json")
+    config_path = Path(__file__).parent.parent.joinpath(
+        "config", "run_heapsim.json")
+    if not config_path.exists():
+        logging.error(f"config file is not found: f{config_path}")
+        sys.exit(1)
 
     with open(config_path, 'r') as f:
         config = json.load(f)
@@ -79,11 +84,12 @@ def main():
     with open(config['samples_file'], 'r') as f:
         samples = f.readlines()
 
-    all_heapsim_results_path = os.path.join(
-        os.path.dirname(__file__), "../data/all_heapsim_results")
+    all_heapsim_results_path = Path(__file__).parent.parent.joinpath(
+        "data", "all_heapsim_results")
+
     if os.path.exists(all_heapsim_results_path):
         shutil.rmtree(all_heapsim_results_path)
-    os.makedirs(all_heapsim_results_path, exist_ok=True)
+    all_heapsim_results_path.mkdir(exist_ok=True)
 
     simulation_index = 0
     for row in samples[1:]:
@@ -91,35 +97,36 @@ def main():
         k = float(row[0])
         phi = float(row[1])
 
-        with open(rate_params_path, 'r') as f:
+        with open(heapsim_paths["rate_params_path"], 'r') as f:
             rate_data = json.load(f)
         rate_data[k_species] = k
         rate_data[phi_species] = phi
 
-        with open(rate_params_path, 'w') as f:
+        with open(heapsim_paths["rate_params_path"], 'w') as f:
             json.dump(rate_data, f, indent=2)
 
         subprocess.run(["bash", "copy_saved_data.sh"],
-                       cwd=heapsim_dir, check=True)
+                       cwd=heapsim_paths["heapsim_dir"], check=True)
 
-        with open(general_params_path, 'r') as f:
-            general_data = json.load(f)
-        general_data["timestep_s"] = 1
-        general_data["maxsteps_s"] = 60
-        with open(general_params_path, 'w') as f:
-            json.dump(general_data, f, indent=2)
-        
-        subprocess.run(["bash", run_sh_path], cwd=heapsim_dir, check=True)
-        
-        general_data["timestep_s"] = config["timestep_s"]
-        general_data["maxsteps_s"] = config["maxsteps_s"]
-        with open(general_params_path, 'w') as f:
-            json.dump(general_data, f, indent=2)
-        
-        timer(lambda: subprocess.run(["bash", run_sh_path],
-                                     cwd=heapsim_dir, check=True))()
-        
-        copy_heapsim_results(result_path, simulation_index,
+        with open(heapsim_paths["general_params_path"], 'r') as f:
+            general_param = json.load(f)
+        general_param["timestep_s"] = 1
+        general_param["maxsteps_s"] = 60
+        with open(heapsim_paths["general_params_path"], 'w') as f:
+            json.dump(general_param, f, indent=2)
+
+        subprocess.run(["bash", heapsim_paths["run_sh_path"]],
+                       cwd=heapsim_paths["heapsim_dir"], check=True)
+
+        general_param["timestep_s"] = config["timestep_s"]
+        general_param["maxsteps_s"] = config["maxsteps_s"]
+        with open(heapsim_paths["general_params_path"], 'w') as f:
+            json.dump(general_param, f, indent=2)
+
+        timer(lambda: subprocess.run(["bash", heapsim_paths["run_sh_path"]],
+                                     cwd=heapsim_paths["heapsim_dir"], check=True))()
+
+        copy_heapsim_results(heapsim_paths["result_path"], simulation_index,
                              rate_data, all_heapsim_results_path, k_species, phi_species)
         simulation_index += 1
 
