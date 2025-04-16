@@ -1,10 +1,10 @@
 {
-    "experiment_data_number": 6,
+    "experiment_data_number": 11,
     "data_numbers_to_fit": 20,
     "polynomial_degree": 5,
-    "timestep": 60,
+    "timestep": 30,
     "save_path": "../data/sum_of_square_error/sse.csv",
     "show_plot": true,
-    "_x_axis": "k",
-    "x_axis": "phi"
+    "x_axis": "k",
+    "_x_axis": "phi"
 }

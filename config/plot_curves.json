@@ -1,4 +1,4 @@
 {
     "experiment_data_file": "../data/experiment_data/experiment_data-1ft.csv",
-    "timestep": 60
+    "timestep": 30
 }
