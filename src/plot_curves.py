@@ -7,7 +7,8 @@ import json
 
 
 def get_k_phi_from_folder(folder):
-    match = re.search(r"-k([\d.]+)-phi([\d.]+)", folder)
+    match = re.search(
+        r"-k([\d.]+(?:e[-+]?\d+)?)-phi([\d.]+(?:e[-+]?\d+)?)", folder)
     if match:
         k, phi = map(float, match.groups())
         print(k, phi)
@@ -69,8 +70,8 @@ def get_extraction_matrix():
 
     for folder in os.listdir(all_heapsim_results):
         folder_path = os.path.join(all_heapsim_results, folder)
-        Cci_csv_path = os.path.join(folder_path, "overall_extraction_Cci.csv")
-        Bbr_csv_path = os.path.join(folder_path, "overall_extraction_Bbr.csv")
+        Cci_csv_path = os.path.join(folder_path, "overall_conversion_Cci.csv")
+        Bbr_csv_path = os.path.join(folder_path, "overall_conversion_Bbr.csv")
         k, phi = get_k_phi_from_folder(folder)
         print(f"Processing k={k}, phi={phi}")
 

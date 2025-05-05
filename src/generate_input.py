@@ -32,7 +32,7 @@ def generate_input(k, phi):
     with open(csv_path, "w") as f:
         f.write("k,phi\n")
         for row in samples:
-            f.write(f"{row[0]:.4f},{row[1]:.4f}\n")
+            f.write(f"{row[0]:.4e},{row[1]:.4e}\n")
         print(f"Samples saved to {os.path.abspath(csv_path)}")
 
 
