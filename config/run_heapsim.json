@@ -2,6 +2,6 @@
     "samples_file": "../data/samples/samples.csv",
     "k":"k_Bbr",
     "phi":"phi_Bbr",
-    "timestep_s" : 30,
-    "maxsteps_s": 10
+    "timestep_s" : 300,
+    "maxsteps_s": 8640
 }

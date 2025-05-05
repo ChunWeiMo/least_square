@@ -2,7 +2,7 @@
     "experiment_data_number": 11,
     "data_numbers_to_fit": 20,
     "polynomial_degree": 5,
-    "timestep": 30,
+    "timestep": 300,
     "save_path": "../data/sum_of_square_error/sse.csv",
     "show_plot": true,
     "x_axis": "k",
