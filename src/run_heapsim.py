@@ -44,18 +44,23 @@ def get_heapsim_paths() -> dict:
 
 def copy_heapsim_results(result_path, simulation_index, rate_data, all_heapsim_results_path, k_species, phi_species):
     simulation_path = os.path.join(
-        all_heapsim_results_path, f"run_{simulation_index:03d}-k{rate_data[k_species]}-phi{rate_data[phi_species]}")
+        all_heapsim_results_path, f"run_{simulation_index:03d}-k{rate_data[k_species]:.4e}-phi{rate_data[phi_species]:.4e}")
     os.makedirs(simulation_path, exist_ok=True)
     overall_extraction_Cci = os.path.join(
-        result_path, "overall_extraction_Cci.csv")
+        result_path, "overall_conversion_Cci.csv")
     overall_extraction_Bbr = os.path.join(
-        result_path, "overall_extraction_Bbr.csv")
+        result_path, "overall_conversion_Bbr.csv")
+    extraction_CuII = os.path.join(
+        result_path, "extraction_CuII.csv")
     if overall_extraction_Cci:
         shutil.copy(overall_extraction_Cci, simulation_path)
-        print(f"overall_extraction_Cci.csv copied to {simulation_path}")
+        print(f"overall_conversion_Cci.csv copied to {simulation_path}")
     if overall_extraction_Bbr:
         shutil.copy(overall_extraction_Bbr, simulation_path)
-        print(f"overall_extraction_Bbr.csv copied to {simulation_path}")
+        print(f"overall_conversion_Bbr.csv copied to {simulation_path}")
+    if extraction_CuII:
+        shutil.copy(extraction_CuII, simulation_path)
+        print(f"extraction_CuII.csv copied to {simulation_path}")
 
 
 def timer(func):
@@ -108,6 +113,16 @@ def main():
         subprocess.run(["bash", "copy_saved_data.sh"],
                        cwd=heapsim_paths["heapsim_dir"], check=True)
 
+        with open(heapsim_paths["general_params_path"], 'r') as f:
+            general_param = json.load(f)
+        general_param["timestep_s"] = 0.1
+        general_param["maxsteps_s"] = 600
+        with open(heapsim_paths["general_params_path"], 'w') as f:
+            json.dump(general_param, f, indent=2)
+
+        subprocess.run(["bash", heapsim_paths["run_sh_path"]],
+                       cwd=heapsim_paths["heapsim_dir"], check=True)
+        
         with open(heapsim_paths["general_params_path"], 'r') as f:
             general_param = json.load(f)
         general_param["timestep_s"] = 1
