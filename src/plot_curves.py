@@ -7,11 +7,13 @@ import json
 
 
 def get_k_phi_from_folder(folder):
-    match = re.search(r"-k([\d.]+(?:e[-+]?\d+)?)-phi([\d.]+(?:e[-+]?\d+)?)", folder)
+    match = re.search(
+        r"run_(\d+)-k([\d.]+(?:e[-+]?\d+)?)-phi([\d.]+(?:e[-+]?\d+)?)", folder
+    )
     if match:
-        k, phi = map(float, match.groups())
+        run, k, phi = map(float, match.groups())
         print(k, phi)
-        return k, phi
+        return run, k, phi
     return None, None
 
 
@@ -37,11 +39,11 @@ def plot_extraction_curve(extraction_map):
     extraction_map = pd.DataFrame(extraction_map)
     filter_extraction = extraction_map
     print(filter_extraction)
-    Y = filter_extraction["Cu_extraction"].values
-    Y2 = filter_extraction["Cu_conversion"].values
+    EXT = filter_extraction["Cu_extraction"].values
+    CON = filter_extraction["Cu_conversion"].values
 
-    duration = calculate_duration(Y[0])
-    X = np.linspace(0, duration, len(Y[0]))
+    duration = calculate_duration(EXT[0])
+    X = np.linspace(0, duration, len(EXT[0]))
     fig, ax = plt.subplots()
     ax.set_xlabel("Days")
     ax.set_ylabel("Extraction")
@@ -54,19 +56,42 @@ def plot_extraction_curve(extraction_map):
         ax.scatter(
             experiment_data[0], experiment_data[1] * 0.01, c="red", label="Experiment"
         )
-
-    colors = ["b", "g", "r", "c", "m"]
-    for curve, k, phi, c in zip(
-        Y, filter_extraction["k"].values, filter_extraction["phi"].values, colors
+    
+    colors = ['blue','green','red','purple', 'dimgrey']
+    for curve, run, k, phi,c in zip(
+        EXT,
+        filter_extraction["run"],
+        filter_extraction["k"].values,
+        filter_extraction["phi"].values,
+        colors
     ):
-        ax.plot(X, curve, label=f"k= {k}, phi= {phi}", color=c, linestyle="dashed")
+        ax.plot(
+            X,
+            curve,
+            label=f"{run} L/hr",
+            color=c,
+            # label=f"run= {run}, k= {k}, phi= {phi}",
+            linestyle="dashed",
+        )
         ax.legend()
 
-    for curve2, k, phi, c in zip(
-        Y2, filter_extraction["k"].values, filter_extraction["phi"].values, colors
+    for curve, run, k, phi,c in zip(
+        CON,
+        filter_extraction["run"],
+        filter_extraction["k"].values,
+        filter_extraction["phi"].values,
+        colors
     ):
-        ax.plot(X, curve2, label=f"k={k}, {phi}", color=c)
+        ax.plot(
+            X,
+            curve,
+            label=f"{run} L/hr",
+            # label=f"run= {run}, k= {k}, phi= {phi}",
+            color=c,
+            linestyle="solid",
+        )
         ax.legend()
+
     plt.show()
 
 
@@ -82,8 +107,8 @@ def get_extraction_matrix():
         Cci_csv_path = os.path.join(folder_path, "overall_conversion_Cci.csv")
         Bbr_csv_path = os.path.join(folder_path, "overall_conversion_Bbr.csv")
         Cu_csv_path = os.path.join(folder_path, "extraction_CuII.csv")
-        k, phi = get_k_phi_from_folder(folder)
-        print(f"Processing k={k}, phi={phi}")
+        run, k, phi = get_k_phi_from_folder(folder)
+        print(f"Processing run= {run}, k={k}, phi={phi}")
 
         if not os.path.exists(Cci_csv_path):
             raise FileNotFoundError(
@@ -108,6 +133,7 @@ def get_extraction_matrix():
         Cu_conversion = 0.4 * Cci_conversion + 0.6 * Bbr_conversion
         extraction_map.append(
             {
+                "run": run,
                 "k": k,
                 "phi": phi,
                 "Cu_conversion": Cu_conversion,
