@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import re
 import json
+from pathlib import Path
 
 
 def get_k_phi_from_folder(folder):
@@ -24,7 +25,7 @@ def sum_of_square_error():
 def calculate_duration(array):
     iteration = len(array)
     try:
-        with open("../config/plot_curves.json", "r") as f:
+        with open("config/plot_curves.json", "r") as f:
             plot_config = json.load(f)
             timestep = plot_config["timestep"]
     except (FileNotFoundError, KeyError):
@@ -48,7 +49,7 @@ def plot_extraction_curve(extraction_map):
     ax.set_xlabel("Days")
     ax.set_ylabel("Extraction")
 
-    with open("../config/plot_curves.json", "r") as f:
+    with open("config/plot_curves.json", "r") as f:
         plot_config = json.load(f)
 
     with open(plot_config["experiment_data_file"], "r") as f:
@@ -75,9 +76,11 @@ def plot_extraction_curve(extraction_map):
 
 
 def get_extraction_matrix():
-    all_heapsim_results = "../data/all_heapsim_results"
-    all_heapsim_results = os.path.join(os.path.dirname(__file__), all_heapsim_results)
-    all_heapsim_results = os.path.abspath(all_heapsim_results)
+    all_heapsim_results = "data/all_heapsim_results"
+    # all_heapsim_results = os.path.join(os.path.dirname(__file__), all_heapsim_results)
+    # all_heapsim_results = os.path.abspath(all_heapsim_results)
+    
+    all_heapsim_results = Path(__file__).parent.parent.joinpath("data/all_heapsim_results")
 
     extraction_map = list()
 

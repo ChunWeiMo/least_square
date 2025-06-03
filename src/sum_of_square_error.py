@@ -74,7 +74,7 @@ def validate_setting_keys(setting_json):
 
 
 def main():
-    with open("../config/sum_of_square_error.json", "r") as f:
+    with open("config/sum_of_square_error.json", "r") as f:
         config_json = json.load(f)
 
     key_validated, missing_message = validate_setting_keys(config_json)
@@ -82,7 +82,7 @@ def main():
         print(missing_message)
         sys.exit(1)
 
-    with open("../config/plot_curves.json", "r") as f:
+    with open("config/plot_curves.json", "r") as f:
         experiment_data_file = json.load(f)["experiment_data_file"]
 
     try:

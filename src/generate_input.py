@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import os
+from pathlib import Path
 
 
 def generate_input(k, phi):
@@ -24,7 +25,7 @@ def generate_input(k, phi):
 
     samples = np.column_stack((np.ravel(k), np.ravel(phi)))
 
-    samples_path = "../data/samples"
+    samples_path = "data/samples"
     if not os.path.exists(samples_path):
         os.makedirs(samples_path)
     csv_path = os.path.join(samples_path, "samples.csv")
@@ -38,7 +39,7 @@ def generate_input(k, phi):
 
 def main():
     try:
-        with open('../config/generate_input_config.json', 'r') as f:
+        with open('config/generate_input_config.json', 'r') as f:
             print("Reading input configuration...")
             input_config = json.load(f)
             k = input_config["k"]

@@ -9,7 +9,7 @@ from scipy.optimize import minimize
 
 def get_data_point():
     try:
-        with open("../config/minimum.json", "r") as f:
+        with open("config/minimum.json", "r") as f:
             config = json.load(f)
     except FileNotFoundError:
         print("Cannot find minimum.json")
