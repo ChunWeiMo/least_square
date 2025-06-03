@@ -17,9 +17,11 @@ def func_poly(x: list, *coefficients) -> list:
 
 
 def curve_fitting_poly(x: list, y: list, degree: int) -> tuple:
+    scale = 1 / np.max(x)
+    x_scaled = x * scale
     initial_guess = [0] + [1] * degree
-    params, _ = curve_fit(func_poly, x, y, p0=initial_guess)
-    return params
+    params, _ = curve_fit(func_poly, x_scaled, y, p0=initial_guess)
+    return [c_scale * (scale**i) for i, c_scale in enumerate(params)]
 
 
 def calculate_x_axis(iterations, timestep=60):
@@ -60,7 +62,7 @@ def calculate_all_sse(extraction_matrix, config_json, experiment_data_file):
     print(f"sse:\n{df['sse']}")
 
     return df
-    
+
 
 def validate_setting_keys(setting_json):
     required_keys = ["experiment_data_number", "data_numbers_to_fit", "polynomial_degree",
@@ -90,7 +92,7 @@ def main():
         sys.exit(1)
 
     df_sse = calculate_all_sse(extraction_matrix, config_json, experiment_data_file)
-    
+
     save_path = os.path.abspath(config_json["save_path"])
     if save_path:
         with open(save_path, "w") as f:
@@ -103,7 +105,6 @@ def main():
         ax.set_xlabel(f"{str(x_axis)}")
         ax.set_ylabel("Sum of square")
         plt.show()
-
 
 
 if __name__ == '__main__':

@@ -40,19 +40,28 @@ def get_data_point():
 
 def find_local_minimum(x, y, bounds):
     print("Finding local minimum...")
-    params = curve_fitting_poly(x, y, 5)
 
-    def objective(x): return func_poly(x, *params)
+    params = curve_fitting_poly(x, y, 3)
 
-    x0 = np.mean(x)
-    minimum = minimize(objective, x0=x0, bounds=bounds)
+    x_scale = (x-x.min())/(x.max()-x.min())
+    scaled_params = curve_fitting_poly(x_scale, y, 3)
+    def objective(x): return func_poly(x, *scaled_params)
+
+    x0 = np.mean(x_scale)
+
+    scaled_bounds_min = (bounds[0][0]-x.min())/(x.max()-x.min())
+    scaled_bounds_max = (bounds[0][1]-x.min())/(x.max()-x.min())
+    scaled_bounds = [[scaled_bounds_min, scaled_bounds_max]]
+    minimum = minimize(objective, x0=x0, bounds=scaled_bounds)
+
     if minimum.success:
+        x_min = minimum.x * (x.max()-x.min())+x.min()
         print("Local minimum is found:")
-        print(minimum.x)
+        print(f"x= {x_min}")
         plt.scatter(x, y, c="blue", label="model")
         plt.scatter(x, func_poly(x, *params), c="red", label="fitted")
-        plt.scatter(minimum.x, func_poly(
-            minimum.x, *params), c="green", label="minimum")
+        plt.scatter(x_min, func_poly(x_min, *params),
+                    c="green", label="minimum")
         plt.legend()
         plt.show()
         return minimum.x
