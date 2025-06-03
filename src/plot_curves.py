@@ -56,39 +56,18 @@ def plot_extraction_curve(extraction_map):
         ax.scatter(
             experiment_data[0], experiment_data[1] * 0.01, c="red", label="Experiment"
         )
-    
-    colors = ['blue','green','red','purple', 'dimgrey']
-    for curve, run, k, phi,c in zip(
+
+    # colors = ['blue','green','red','purple', 'dimgrey']
+    for curve, run, k, phi in zip(
         EXT,
         filter_extraction["run"],
         filter_extraction["k"].values,
         filter_extraction["phi"].values,
-        colors
     ):
         ax.plot(
             X,
             curve,
-            label=f"{run} L/hr",
-            color=c,
-            # label=f"run= {run}, k= {k}, phi= {phi}",
-            linestyle="dashed",
-        )
-        ax.legend()
-
-    for curve, run, k, phi,c in zip(
-        CON,
-        filter_extraction["run"],
-        filter_extraction["k"].values,
-        filter_extraction["phi"].values,
-        colors
-    ):
-        ax.plot(
-            X,
-            curve,
-            label=f"{run} L/hr",
-            # label=f"run= {run}, k= {k}, phi= {phi}",
-            color=c,
-            linestyle="solid",
+            label=f"run= {run}, k= {k}, phi= {phi}",
         )
         ax.legend()
 
