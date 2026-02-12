@@ -1,9 +1,9 @@
 {
-    "data_file": "../data/sum_of_square_error/sse.csv",
+    "data_file": "data/sum_of_square_error/sse.csv",
     "x": "k",
     "y": "sse",
     "bounds": [
-        1e-9,
-        1e-8
+        5e-08,
+        5e-07
     ]
 }

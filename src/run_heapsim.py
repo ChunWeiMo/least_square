@@ -52,6 +52,12 @@ def copy_heapsim_results(result_path, simulation_index, rate_data, all_heapsim_r
         result_path, "overall_conversion_Bbr.csv")
     extraction_CuII = os.path.join(
         result_path, "extraction_CuII.csv")
+    extraction_FeIII = os.path.join(
+        result_path, "c_out_FeIII.csv")
+    extraction_FeII = os.path.join(
+        result_path, "c_out_FeII.csv")
+    solid_content_bacteria = os.path.join(
+        result_path, "solid_content_bacteria.csv")
     if overall_extraction_Cci:
         shutil.copy(overall_extraction_Cci, simulation_path)
         print(f"overall_conversion_Cci.csv copied to {simulation_path}")
@@ -61,6 +67,15 @@ def copy_heapsim_results(result_path, simulation_index, rate_data, all_heapsim_r
     if extraction_CuII:
         shutil.copy(extraction_CuII, simulation_path)
         print(f"extraction_CuII.csv copied to {simulation_path}")
+    if extraction_FeIII:
+        shutil.copy(extraction_FeIII, simulation_path)
+        print(f"extraction_FeIII.csv copied to {simulation_path}")
+    if extraction_FeII:
+        shutil.copy(extraction_FeII, simulation_path)
+        print(f"extraction_FeII.csv copied to {simulation_path}")
+    if solid_content_bacteria:
+        shutil.copy(solid_content_bacteria, simulation_path)
+        print(f"solid_content_bacteria.csv copied to {simulation_path}")
 
 
 def timer(func):
@@ -115,18 +130,28 @@ def main():
 
         with open(heapsim_paths["general_params_path"], 'r') as f:
             general_param = json.load(f)
-        general_param["timestep_s"] = 0.1
-        general_param["maxsteps_s"] = 600
+        general_param["timestep_s"] = 5
+        general_param["maxsteps_s"] = 100
         with open(heapsim_paths["general_params_path"], 'w') as f:
             json.dump(general_param, f, indent=2)
 
         subprocess.run(["bash", heapsim_paths["run_sh_path"]],
                        cwd=heapsim_paths["heapsim_dir"], check=True)
-        
+
         with open(heapsim_paths["general_params_path"], 'r') as f:
             general_param = json.load(f)
-        general_param["timestep_s"] = 1
-        general_param["maxsteps_s"] = 60
+        general_param["timestep_s"] = 10
+        general_param["maxsteps_s"] = 100
+        with open(heapsim_paths["general_params_path"], 'w') as f:
+            json.dump(general_param, f, indent=2)
+
+        subprocess.run(["bash", heapsim_paths["run_sh_path"]],
+                       cwd=heapsim_paths["heapsim_dir"], check=True)
+
+        with open(heapsim_paths["general_params_path"], 'r') as f:
+            general_param = json.load(f)
+        general_param["timestep_s"] = 60
+        general_param["maxsteps_s"] = 100
         with open(heapsim_paths["general_params_path"], 'w') as f:
             json.dump(general_param, f, indent=2)
 

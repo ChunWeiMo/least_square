@@ -1,7 +1,7 @@
 {
-    "samples_file": "../data/samples/samples.csv",
-    "k":"k_Cci",
-    "phi":"phi_Cci",
-    "timestep_s" : 300,
-    "maxsteps_s": 8640
+    "samples_file": "data/samples/samples.csv",
+    "k":"k_g_FeIII",
+    "phi":"c_bug_max",
+    "timestep_s" : 180,
+    "maxsteps_s": 11520
 }
