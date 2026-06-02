@@ -43,16 +43,22 @@ def get_heapsim_paths() -> dict:
     # return heapsim_paths
 
 
-def copy_heapsim_results(result_path, simulation_index, rate_data, all_heapsim_results_path, k_species, phi_species):
+def copy_heapsim_results(
+    result_path,
+    simulation_index,
+    rate_data,
+    all_heapsim_results_path,
+    k_species,
+    phi_species,
+):
     simulation_path = os.path.join(
-        all_heapsim_results_path, f"run_{simulation_index:03d}-k{rate_data[k_species]:.4e}-phi{rate_data[phi_species]:.4e}")
+        all_heapsim_results_path,
+        f"run_{simulation_index:03d}-k{rate_data[k_species]:.4e}-phi{rate_data[phi_species]:.4e}",
+    )
     os.makedirs(simulation_path, exist_ok=True)
-    overall_extraction_Cci = os.path.join(
-        result_path, "overall_conversion_Cci.csv")
-    overall_extraction_Bbr = os.path.join(
-        result_path, "overall_conversion_Bbr.csv")
-    extraction_CuII = os.path.join(
-        result_path, "extraction_CuII.csv")
+    overall_extraction_Cci = os.path.join(result_path, "overall_conversion_Cci.csv")
+    overall_extraction_Bbr = os.path.join(result_path, "overall_conversion_Bbr.csv")
+    extraction_CuII = os.path.join(result_path, "extraction_CuII.csv")
     if overall_extraction_Cci:
         shutil.copy(overall_extraction_Cci, simulation_path)
         print(f"overall_conversion_Cci.csv copied to {simulation_path}")
@@ -70,38 +76,44 @@ def timer(func):
         func(*args, **kwargs)
         end = time.time()
         print(f"Execution time: {end - start:.2f} seconds")
+
     return wrapper
 
 
 def main():
-    heapsim_paths = get_heapsim_paths()
+    # heapsim_paths = get_heapsim_paths()
 
-    # config_path = Path(__file__).parent.parent.joinpath(
-    #     "config", "run_heapsim.json")
-    # if not config_path.exists():
-    #     logging.error(f"config file is not found: f{config_path}")
-    #     sys.exit(1)
+    config_path = Path.cwd() / "config" / "run_heapsim.json"
+    if not config_path.exists():
+        logging.error(f"config file is not found: f{config_path}")
+        sys.exit(1)
 
-    # with open(config_path, 'r') as f:
-    #     config = json.load(f)
-    #     k_species = config["k"]
-    #     phi_species = config["phi"]
+    params_path = Path.cwd() / "params"
+    if not params_path.exists():
+        print(f"params folder is not found: {params_path}")
+        sys.abiflags
 
-    # with open(config['samples_file'], 'r') as f:
-    #     samples = f.readlines()
+    enable_features_path = params_path / "enable_features.json"
+    general_parameters_path = params_path / "general_parameters.json"
+    rate_parameters_path = params_path / "rate_parameters.json"
 
-    # all_heapsim_results_path = Path(__file__).parent.parent.joinpath(
-    #     "data", "all_heapsim_results")
+    with open(config_path, "r") as f:
+        config = json.load(f)
+        k_species = config["k"]
+        phi_species = config["phi"]
 
-    # if os.path.exists(all_heapsim_results_path):
-    #     shutil.rmtree(all_heapsim_results_path)
-    # all_heapsim_results_path.mkdir(exist_ok=True)
+    with open(config["samples_file"], "r") as f:
+        samples = f.readlines()
+        print(samples)
 
-    # simulation_index = 0
-    # for row in samples[1:]:
-    #     row = row.strip().split(',')
-    #     k = float(row[0])
-    #     phi = float(row[1])
+    all_heapsim_results_path = Path.cwd() / "data" / "all_heapsim_results"
+    all_heapsim_results_path.mkdir(exist_ok=True)
+
+    simulation_index = 0
+    for row in samples[1:]:
+        row = row.strip().split(",")
+        k = float(row[0])
+        phi = float(row[1])
 
     #     with open(heapsim_paths["rate_params_path"], 'r') as f:
     #         rate_data = json.load(f)
@@ -123,7 +135,7 @@ def main():
 
     #     subprocess.run(["bash", heapsim_paths["run_sh_path"]],
     #                    cwd=heapsim_paths["heapsim_dir"], check=True)
-        
+
     #     with open(heapsim_paths["general_params_path"], 'r') as f:
     #         general_param = json.load(f)
     #     general_param["timestep_s"] = 1
@@ -147,5 +159,5 @@ def main():
     #     simulation_index += 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
