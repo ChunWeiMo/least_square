@@ -5,3 +5,4 @@
 *.xlsx
 *.pyc
 .vscode
+src/least_square.egg-info

@@ -1,0 +1,14 @@
+{
+    "water": true,
+    "solute": false,
+    "solid": false,
+    "adsorption": false,
+    "desorption": false,
+    "r_adb_Tu": false,
+    "r_des_Tu": false,
+    "r_COx": false,
+    "r_Cci": false,
+    "r_Bbr": false,
+    "r_Cov": false,
+    "r_Meruane": false
+}

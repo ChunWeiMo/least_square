@@ -1,0 +1,25 @@
+{
+    "mode": "continue",
+    
+    "_comment_mode": "What 'mode' can be:",
+    "_mode_options": {
+        "new": "Start a completely new simulation. Will delete old result folder and h5 file.",
+        "continue": "Resume from the last saved step in the h5 file (default).",
+        "restart": "Reset to step 0 but keep the same h5 filename (overwrite existing data)."
+    },
+
+    "h5_file_path": "result/result.h5",
+
+    "save_mode":"w",
+    "_save_mode_options":
+    {
+        "w": "overwrite",
+        "a": "append"
+    },
+    
+    "output_dir": "result/csv",
+
+    "_comment_save": "Saving settings",
+
+    "notes": "This is the default configuration for continuing simulation. Change mode to 'new' when you want to start over."
+}

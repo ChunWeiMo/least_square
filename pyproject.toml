@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "least_square"
+version = "0.1.0"
+description = "Least Square Method for HeapSim parameter fitting"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "matplotlib>=3.8",
+    "scipy>=1.10",
+    "Pillow>=10.0",   # used by data_extractor.py
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[project.scripts]
+least-square-plot = "least_square.plot_curves:main"
+least-square-sse = "least_square.sum_of_square_error:main"
+least-square-generate = "least_square.generate_input:main"
+least-square-run_heapsim2D = "least_square.run_heapsim:main"
