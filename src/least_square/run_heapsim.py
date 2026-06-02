@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Any
+import csv
 
 
 @dataclass(frozen=True)
@@ -76,6 +77,16 @@ def get_heapsim_paths() -> dict:
     # return heapsim_paths
 
 
+def load_samples(samples_path: Path) -> list[tuple[float, float]]:
+    if not samples_path.exists():
+        raise FileNotFoundError(f"Samples file not found: {samples_path}")
+
+    with samples_path.open(newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader, None)
+        return [(float(row[0]), float(row[1])) for row in reader if row]
+
+
 def copy_heapsim_results(
     result_path,
     simulation_index,
@@ -118,6 +129,8 @@ def main():
 
     config_path = Path.cwd() / "config" / "run_heapsim.json"
     config = get_run_heapsim_config(config_path)
+    samples = load_samples(config.samples_file)
+    print(f"Loaded {len(samples)} samples from {config.samples_file}")
 
     # if not config_path.exists():
     #     logging.error(f"config file is not found: f{config_path}")
@@ -131,15 +144,6 @@ def main():
     # enable_features_path = params_path / "enable_features.json"
     # general_parameters_path = params_path / "general_parameters.json"
     # rate_parameters_path = params_path / "rate_parameters.json"
-
-    # with open(config_path, "r") as f:
-    #     config = json.load(f)
-    #     k_species = config["k"]
-    #     phi_species = config["phi"]
-
-    # with open(config["samples_file"], "r") as f:
-    #     samples = f.readlines()
-    #     print(samples)
 
     # all_heapsim_results_path = Path.cwd() / "data" / "all_heapsim_results"
     # all_heapsim_results_path.mkdir(exist_ok=True)
