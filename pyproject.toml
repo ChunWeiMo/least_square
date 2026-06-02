@@ -22,5 +22,5 @@ namespaces = false
 [project.scripts]
 least-square-plot = "least_square.plot_curves:main"
 least-square-sse = "least_square.sum_of_square_error:main"
-least-square-generate = "least_square.generate_input:main"
+least-square-generate_input = "least_square.generate_input:main"
 least-square-run_heapsim2D = "least_square.run_heapsim:main"
