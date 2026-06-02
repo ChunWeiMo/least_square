@@ -2,7 +2,7 @@ import json
 import os
 import numpy as np
 import pandas as pd
-from sum_of_square_error import func_poly, curve_fitting_poly
+from least_square.sum_of_square_error import func_poly, curve_fitting_poly
 from matplotlib import pyplot as plt
 from scipy.optimize import minimize
 

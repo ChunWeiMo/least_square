@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import numpy as np
-from plot_curves import get_extraction_matrix
+from least_square.plot_curves import get_extraction_matrix
 import os
 import sys
 

@@ -1,0 +1,15 @@
+{
+    "h5_file_path": "result/result.h5",
+    "dataset_names": [
+        "H2O",
+        "Cci",
+        "Bbr",
+        "COx"
+    ],
+    "_save_to_file": false,
+    "steps_per_frame": 1,
+    "steps_to_save": 115,
+    "interval": 200,
+    "fps": 5,
+    "save_to_file": "animation.mp4"
+}
