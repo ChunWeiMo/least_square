@@ -6,6 +6,39 @@ import time
 import logging
 import sys
 from pathlib import Path
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass(frozen=True)
+class RunHeapsimConfig:
+    samples_file: Path
+    k: str
+    phi: str
+    timestep_s: float
+    maxsteps_s: int
+
+
+def get_run_heapsim_config(config_path: Path) -> RunHeapsimConfig:
+    if not config_path.exists():
+        raise FileNotFoundError(f"Config file not found: {config_path}")
+
+    with config_path.open("r", encoding="utf-8") as f:
+        raw: dict[str, Any] = json.load(f)
+    required_keys = {"samples_file", "k", "phi", "timestep_s", "maxsteps_s"}
+    missing_keys = required_keys - set(raw.keys())
+    if missing_keys:
+        raise KeyError(f"Missing keys: {missing_keys}")
+
+    project_root = Path.cwd()
+    samples_path = (project_root / raw["samples_file"]).resolve()
+    return RunHeapsimConfig(
+        samples_file=samples_path,
+        k=str(raw["k"]),
+        phi=str(raw["phi"]),
+        timestep_s=float(raw["timestep_s"]),
+        maxsteps_s=int(raw["maxsteps_s"]),
+    )
 
 
 def get_heapsim_paths() -> dict:
@@ -84,36 +117,38 @@ def main():
     # heapsim_paths = get_heapsim_paths()
 
     config_path = Path.cwd() / "config" / "run_heapsim.json"
-    if not config_path.exists():
-        logging.error(f"config file is not found: f{config_path}")
-        sys.exit(1)
+    config = get_run_heapsim_config(config_path)
 
-    params_path = Path.cwd() / "params"
-    if not params_path.exists():
-        print(f"params folder is not found: {params_path}")
-        sys.abiflags
+    # if not config_path.exists():
+    #     logging.error(f"config file is not found: f{config_path}")
+    #     sys.exit(1)
 
-    enable_features_path = params_path / "enable_features.json"
-    general_parameters_path = params_path / "general_parameters.json"
-    rate_parameters_path = params_path / "rate_parameters.json"
+    # params_path = Path.cwd() / "params"
+    # if not params_path.exists():
+    #     print(f"params folder is not found: {params_path}")
+    #     sys.abiflags
 
-    with open(config_path, "r") as f:
-        config = json.load(f)
-        k_species = config["k"]
-        phi_species = config["phi"]
+    # enable_features_path = params_path / "enable_features.json"
+    # general_parameters_path = params_path / "general_parameters.json"
+    # rate_parameters_path = params_path / "rate_parameters.json"
 
-    with open(config["samples_file"], "r") as f:
-        samples = f.readlines()
-        print(samples)
+    # with open(config_path, "r") as f:
+    #     config = json.load(f)
+    #     k_species = config["k"]
+    #     phi_species = config["phi"]
 
-    all_heapsim_results_path = Path.cwd() / "data" / "all_heapsim_results"
-    all_heapsim_results_path.mkdir(exist_ok=True)
+    # with open(config["samples_file"], "r") as f:
+    #     samples = f.readlines()
+    #     print(samples)
 
-    simulation_index = 0
-    for row in samples[1:]:
-        row = row.strip().split(",")
-        k = float(row[0])
-        phi = float(row[1])
+    # all_heapsim_results_path = Path.cwd() / "data" / "all_heapsim_results"
+    # all_heapsim_results_path.mkdir(exist_ok=True)
+
+    # simulation_index = 0
+    # for row in samples[1:]:
+    #     row = row.strip().split(",")
+    #     k = float(row[0])
+    #     phi = float(row[1])
 
     #     with open(heapsim_paths["rate_params_path"], 'r') as f:
     #         rate_data = json.load(f)
