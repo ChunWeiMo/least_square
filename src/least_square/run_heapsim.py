@@ -42,6 +42,30 @@ def get_run_heapsim_config(config_path: Path) -> RunHeapsimConfig:
     )
 
 
+@dataclass(frozen=True)
+class ParamsPath:
+    general: Path
+    rate: Path
+    enable_features: Path
+
+    @classmethod
+    def from_dir(cls, params_dir: Path) -> "ParamsPath":
+        general = params_dir / "general_parameters.json"
+        if not general.exists():
+            raise FileNotFoundError(f"General parameters not found: {general}")
+        rate = params_dir / "rate_parameters.json"
+        if not rate.exists():
+            raise FileNotFoundError(f"Rate parameters not found: {rate}")
+        enable_features = params_dir / "enable_features.json"
+        if not enable_features.exists():
+            raise FileNotFoundError(f"Enable features not found: {enable_features}")
+        return cls(
+            general=general,
+            rate=rate,
+            enable_features=enable_features,
+        )
+
+
 def get_heapsim_paths() -> dict:
     print("Getting HeapSim paths...")
     heapsim_paths = dict()
@@ -87,6 +111,13 @@ def load_samples(samples_path: Path) -> list[tuple[float, float]]:
         return [(float(row[0]), float(row[1])) for row in reader if row]
 
 
+def check_params_path():
+    params_path = Path.cwd() / "params"
+    if not params_path.exists():
+        print(f"params folder is not found: {params_path}")
+        sys.exit(1)
+
+
 def copy_heapsim_results(
     result_path,
     simulation_index,
@@ -125,31 +156,22 @@ def timer(func):
 
 
 def main():
-    # heapsim_paths = get_heapsim_paths()
-
     config_path = Path.cwd() / "config" / "run_heapsim.json"
     config = get_run_heapsim_config(config_path)
     samples = load_samples(config.samples_file)
     print(f"Loaded {len(samples)} samples from {config.samples_file}")
 
-    # if not config_path.exists():
-    #     logging.error(f"config file is not found: f{config_path}")
-    #     sys.exit(1)
+    params_path = ParamsPath.from_dir(Path.cwd() / "params")
+    print(f"rate_params_path: {params_path.rate}")
+    print(f"general_params_path: {params_path.general}")
+    print(f"enable_features_path: {params_path.enable_features}")
 
-    # params_path = Path.cwd() / "params"
-    # if not params_path.exists():
-    #     print(f"params folder is not found: {params_path}")
-    #     sys.abiflags
+    all_heapsim_results_path = Path.cwd() / "data" / "all_heapsim_results"
+    all_heapsim_results_path.mkdir(exist_ok=True)
 
-    # enable_features_path = params_path / "enable_features.json"
-    # general_parameters_path = params_path / "general_parameters.json"
-    # rate_parameters_path = params_path / "rate_parameters.json"
-
-    # all_heapsim_results_path = Path.cwd() / "data" / "all_heapsim_results"
-    # all_heapsim_results_path.mkdir(exist_ok=True)
-
-    # simulation_index = 0
-    # for row in samples[1:]:
+    simulation_index = 0
+    for k, phi in samples:
+        print(f"k: {k}, phi: {phi}")
     #     row = row.strip().split(",")
     #     k = float(row[0])
     #     phi = float(row[1])
