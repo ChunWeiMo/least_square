@@ -25,10 +25,11 @@ def generate_input(k, phi):
 
     samples = np.column_stack((np.ravel(k), np.ravel(phi)))
 
-    samples_path = "data/samples"
-    if not os.path.exists(samples_path):
-        os.makedirs(samples_path)
-    csv_path = os.path.join(samples_path, "samples.csv")
+    samples_path = Path.cwd() / "data/samples"
+    if not samples_path.exists():
+        samples_path.mkdir(parents=True)
+
+    csv_path = samples_path / "samples.csv"
 
     with open(csv_path, "w") as f:
         f.write("k,phi\n")
@@ -38,8 +39,13 @@ def generate_input(k, phi):
 
 
 def main():
+    input_config_path = Path.cwd() / "config" / "generate_input_config.json"
+    if not input_config_path.exists():
+        print("File not found. Exiting...")
+        return
+
     try:
-        with open('config/generate_input_config.json', 'r') as f:
+        with open(input_config_path, "r") as f:
             print("Reading input configuration...")
             input_config = json.load(f)
             k = input_config["k"]
@@ -51,5 +57,5 @@ def main():
     generate_input(k, phi)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
