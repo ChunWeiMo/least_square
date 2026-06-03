@@ -160,6 +160,7 @@ def main():
     config = get_run_heapsim_config(config_path)
     samples = load_samples(config.samples_file)
     print(f"Loaded {len(samples)} samples from {config.samples_file}")
+    print(f"k: {config.k}, phi: {config.phi}")
 
     params_path = ParamsPath.from_dir(Path.cwd() / "params")
     print(f"rate_params_path: {params_path.rate}")
@@ -172,45 +173,22 @@ def main():
     simulation_index = 0
     for k, phi in samples:
         print(f"k: {k}, phi: {phi}")
-    #     row = row.strip().split(",")
-    #     k = float(row[0])
-    #     phi = float(row[1])
 
-    #     with open(heapsim_paths["rate_params_path"], 'r') as f:
-    #         rate_data = json.load(f)
-    #     rate_data[k_species] = k
-    #     rate_data[phi_species] = phi
+        with params_path.rate.open("r") as f:
+            rate_data = json.load(f)
+        rate_data[config.k] = k
+        rate_data[config.phi] = phi
+        with open(params_path.rate, "w") as f:
+            json.dump(rate_data, f, indent=2)
 
-    #     with open(heapsim_paths["rate_params_path"], 'w') as f:
-    #         json.dump(rate_data, f, indent=2)
+        with params_path.general.open("r") as f:
+            general_param = json.load(f)
+        general_param["timestep_s"] = 0.1
+        general_param["maxsteps_s"] = 5
+        with params_path.general.open("w") as f:
+            json.dump(general_param, f, indent=2)
 
-    #     subprocess.run(["bash", "copy_saved_data.sh"],
-    #                    cwd=heapsim_paths["heapsim_dir"], check=True)
-
-    #     with open(heapsim_paths["general_params_path"], 'r') as f:
-    #         general_param = json.load(f)
-    #     general_param["timestep_s"] = 0.1
-    #     general_param["maxsteps_s"] = 600
-    #     with open(heapsim_paths["general_params_path"], 'w') as f:
-    #         json.dump(general_param, f, indent=2)
-
-    #     subprocess.run(["bash", heapsim_paths["run_sh_path"]],
-    #                    cwd=heapsim_paths["heapsim_dir"], check=True)
-
-    #     with open(heapsim_paths["general_params_path"], 'r') as f:
-    #         general_param = json.load(f)
-    #     general_param["timestep_s"] = 1
-    #     general_param["maxsteps_s"] = 60
-    #     with open(heapsim_paths["general_params_path"], 'w') as f:
-    #         json.dump(general_param, f, indent=2)
-
-    #     subprocess.run(["bash", heapsim_paths["run_sh_path"]],
-    #                    cwd=heapsim_paths["heapsim_dir"], check=True)
-
-    #     general_param["timestep_s"] = config["timestep_s"]
-    #     general_param["maxsteps_s"] = config["maxsteps_s"]
-    #     with open(heapsim_paths["general_params_path"], 'w') as f:
-    #         json.dump(general_param, f, indent=2)
+        subprocess.run(["heapsim2D"], cwd=Path.cwd(), check=True)
 
     #     timer(lambda: subprocess.run(["bash", heapsim_paths["run_sh_path"]],
     #                                  cwd=heapsim_paths["heapsim_dir"], check=True))()
