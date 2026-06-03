@@ -1,7 +1,12 @@
 {
     "samples_file": "data/samples/samples.csv",
-    "k":"k_g_FeIII",
-    "phi":"c_bug_max",
-    "timestep_s" : 180,
-    "maxsteps_s": 11520
+    "k": "Meruane_Y",
+    "phi": "bacteria_0",
+    "timestep_s": 180,
+    "maxsteps_s": 7200,
+    "csv_to_be_plotted": [
+        "c_out_FeIII.csv",
+        "c_out_FeII.csv",
+        "solid_content_bacteria.csv"
+    ]
 }

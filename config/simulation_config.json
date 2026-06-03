@@ -1,5 +1,5 @@
 {
-    "mode": "continue",
+    "mode": "restart",
     
     "_comment_mode": "What 'mode' can be:",
     "_mode_options": {
@@ -8,7 +8,7 @@
         "restart": "Reset to step 0 but keep the same h5 filename (overwrite existing data)."
     },
 
-    "h5_file_path": "result/result.h5",
+    "h5_file_path": "result/water-7200-low_bug_init.h5",
 
     "save_mode":"w",
     "_save_mode_options":
