@@ -142,8 +142,8 @@ def main():
 
         with params_path.general.open("r") as f:
             general_param = json.load(f)
-        general_param["timestep_s"] = 0.1
-        general_param["maxsteps_s"] = 5
+        general_param["timestep_s"] = config.timestep_s
+        general_param["maxsteps_s"] = config.maxsteps_s
         with params_path.general.open("w") as f:
             json.dump(general_param, f, indent=2)
 
