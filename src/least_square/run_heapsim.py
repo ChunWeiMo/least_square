@@ -80,41 +80,6 @@ class ParamsPath:
         )
 
 
-def get_heapsim_paths() -> dict:
-    print("Getting HeapSim paths...")
-    heapsim_paths = dict()
-
-    heapsim_dir = Path.cwd().parent.joinpath("heapsim2D-python")
-    print(heapsim_dir)
-    # if not heapsim_dir.exists():
-    #     raise FileNotFoundError(f"Error: {heapsim_dir} not found!")
-    # heapsim_paths["heapsim_dir"] = heapsim_dir
-
-    # run_sh_path = heapsim_dir.joinpath("run.sh")
-    # if not run_sh_path.exists():
-    #     raise FileNotFoundError(f"Error: {run_sh_path} not found!")
-    # heapsim_paths["run_sh_path"] = run_sh_path
-
-    # general_params_path = heapsim_dir.joinpath(
-    #     "params", "general_parameters.json")
-    # if not general_params_path.exists():
-    #     raise FileNotFoundError(f"Error: {general_params_path} not found!")
-    # heapsim_paths["general_params_path"] = general_params_path
-
-    # rate_params_path = heapsim_dir.joinpath("params", "rate_parameters.json")
-    # if not rate_params_path.exists():
-    #     raise FileNotFoundError(f"Error: {rate_params_path} not found!")
-    # heapsim_paths["rate_params_path"] = rate_params_path
-
-    # result_path = heapsim_dir.joinpath("results", "CSV")
-    # if not result_path.exists():
-    #     raise FileNotFoundError(f"Error: {result_path} not found!")
-    # heapsim_paths["result_path"] = result_path
-
-    # print("HeapSim paths retrieved successfully!")
-    # return heapsim_paths
-
-
 def load_samples(samples_path: Path) -> list[tuple[float, float]]:
     if not samples_path.exists():
         raise FileNotFoundError(f"Samples file not found: {samples_path}")
@@ -123,13 +88,6 @@ def load_samples(samples_path: Path) -> list[tuple[float, float]]:
         reader = csv.reader(f)
         next(reader, None)
         return [(float(row[0]), float(row[1])) for row in reader if row]
-
-
-def check_params_path():
-    params_path = Path.cwd() / "params"
-    if not params_path.exists():
-        print(f"params folder is not found: {params_path}")
-        sys.exit(1)
 
 
 def copy_heapsim_results(
@@ -150,16 +108,6 @@ def copy_heapsim_results(
             raise FileNotFoundError(f"CSV file not found: {csv_path}")
         shutil.copy(csv_path, simulation_path)
         print(f"{csv_file} copied to {simulation_path}")
-
-
-def timer(func):
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        func(*args, **kwargs)
-        end = time.time()
-        print(f"Execution time: {end - start:.2f} seconds")
-
-    return wrapper
 
 
 def main():
