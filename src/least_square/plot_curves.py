@@ -7,6 +7,19 @@ import json
 from pathlib import Path
 
 
+class ExtractionMap:
+    def __init__(self):
+        self.runs = []
+
+
+class Run:
+    def __init__(self, run_id, k, phi):
+        self.run_id = run_id
+        self.k = k
+        self.phi = phi
+        self.data = {}
+
+
 def get_k_phi_from_folder(folder):
     match = re.search(
         r"run_(\d+)-k([\d.]+(?:e[-+]?\d+)?)-phi([\d.]+(?:e[-+]?\d+)?)", folder
@@ -52,11 +65,11 @@ def plot_extraction_curve(extraction_map):
     with open("config/plot_curves.json", "r") as f:
         plot_config = json.load(f)
 
-    with open(plot_config["experiment_data_file"], "r") as f:
-        experiment_data = pd.read_csv(f, header=None)
-        ax.scatter(
-            experiment_data[0], experiment_data[1] * 0.01, c="red", label="Experiment"
-        )
+    # with open(plot_config["experiment_data_file"], "r") as f:
+    #     experiment_data = pd.read_csv(f, header=None)
+    #     ax.scatter(
+    #         experiment_data[0], experiment_data[1] * 0.01, c="red", label="Experiment"
+    #     )
 
     # colors = ['blue','green','red','purple', 'dimgrey']
     for curve, run, k, phi in zip(
@@ -76,58 +89,33 @@ def plot_extraction_curve(extraction_map):
 
 
 def get_extraction_matrix():
-    all_heapsim_results = "data/all_heapsim_results"
-    # all_heapsim_results = os.path.join(os.path.dirname(__file__), all_heapsim_results)
-    # all_heapsim_results = os.path.abspath(all_heapsim_results)
-    
-    all_heapsim_results = Path(__file__).parent.parent.joinpath("data/all_heapsim_results")
+    all_heapsim_results = Path.cwd() / "data" / "all_heapsim_results"
 
-    extraction_map = list()
+    emap = ExtractionMap()
 
-    for folder in os.listdir(all_heapsim_results):
-        folder_path = os.path.join(all_heapsim_results, folder)
-        Cci_csv_path = os.path.join(folder_path, "overall_conversion_Cci.csv")
-        Bbr_csv_path = os.path.join(folder_path, "overall_conversion_Bbr.csv")
-        Cu_csv_path = os.path.join(folder_path, "extraction_CuII.csv")
-        run, k, phi = get_k_phi_from_folder(folder)
-        print(f"Processing run= {run}, k={k}, phi={phi}")
+    for folder in all_heapsim_results.iterdir():
+        if not folder.is_dir():
+            continue
+        run_id, k, phi = get_k_phi_from_folder(folder.name)
+        if run_id is None:
+            continue
 
-        if not os.path.exists(Cci_csv_path):
-            raise FileNotFoundError(
-                f"Error: {Cci_csv_path} not found in {folder_path}!"
-            )
+        run = Run(run_id, k, phi)
+        print(f"Processing run= {run.run_id}, k={run.k}, phi={run.phi}")
 
-        if not os.path.exists(Bbr_csv_path):
-            raise FileNotFoundError(
-                f"Error: {Bbr_csv_path} not found in {folder_path}!"
-            )
+        for csv_file in os.listdir(folder):
+            key = csv_file.split(".")[0]
+            csv_data = pd.read_csv(folder / csv_file, header=None)
+            run.data[key] = csv_data
 
-        if not os.path.exists(Cu_csv_path):
-            raise FileNotFoundError(f"Error: {Cu_csv_path} not found in {folder_path}!")
+        emap.runs.append(run)
 
-        with open(Cci_csv_path, "r") as f:
-            Cci_conversion = np.array([float(row.strip()) for row in f.readlines()])
-        with open(Bbr_csv_path, "r") as f:
-            Bbr_conversion = np.array([float(row.strip()) for row in f.readlines()])
-        with open(Cu_csv_path, "r") as f:
-            Cu_extraction = np.array([float(row.strip()) for row in f.readlines()])
-
-        Cu_conversion = 0.4 * Cci_conversion + 0.6 * Bbr_conversion
-        extraction_map.append(
-            {
-                "run": run,
-                "k": k,
-                "phi": phi,
-                "Cu_conversion": Cu_conversion,
-                "Cu_extraction": Cu_extraction,
-            }
-        )
-    return extraction_map
+    return emap
 
 
 def main():
     extraction_map = get_extraction_matrix()
-    plot_extraction_curve(extraction_map)
+    # plot_extraction_curve(extraction_map)
 
 
 if __name__ == "__main__":
