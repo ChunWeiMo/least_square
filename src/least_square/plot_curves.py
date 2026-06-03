@@ -113,9 +113,37 @@ def get_extraction_matrix():
     return emap
 
 
+def plot_csv(emap: ExtractionMap, species: str):
+    with open("config/run_heapsim.json") as f:
+        timestep_s = json.load(f)["timestep_s"]
+
+    fig, ax = plt.subplots()
+    ax.set_xlabel("Days")
+    ax.set_ylabel(species)
+
+    for run in emap.runs:
+        y = run.data[species]
+
+        if hasattr(y, "values"):
+            y = y[0].to_numpy()
+
+        n = len(y) - 1
+        days = np.linspace(0, n * timestep_s / 86400.0, n)
+
+        ax.plot(
+            days,
+            y[1:],
+            label=f"run={int(run.run_id)}, k={run.k:.2f}, phi={run.phi:.2e}",
+        )
+
+    ax.legend()
+    plt.title(species)
+    plt.show()
+
+
 def main():
     extraction_map = get_extraction_matrix()
-    # plot_extraction_curve(extraction_map)
+    plot_csv(extraction_map, "solid_content_bacteria")
 
 
 if __name__ == "__main__":
