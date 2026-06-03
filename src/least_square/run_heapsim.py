@@ -18,6 +18,7 @@ class RunHeapsimConfig:
     phi: str
     timestep_s: float
     maxsteps_s: int
+    csv_to_be_plotted: list[str]
 
 
 def get_run_heapsim_config(config_path: Path) -> RunHeapsimConfig:
@@ -26,19 +27,32 @@ def get_run_heapsim_config(config_path: Path) -> RunHeapsimConfig:
 
     with config_path.open("r", encoding="utf-8") as f:
         raw: dict[str, Any] = json.load(f)
-    required_keys = {"samples_file", "k", "phi", "timestep_s", "maxsteps_s"}
+    required_keys = {
+        "samples_file",
+        "k",
+        "phi",
+        "timestep_s",
+        "maxsteps_s",
+        "csv_to_be_plotted",
+    }
     missing_keys = required_keys - set(raw.keys())
     if missing_keys:
         raise KeyError(f"Missing keys: {missing_keys}")
 
     project_root = Path.cwd()
     samples_path = (project_root / raw["samples_file"]).resolve()
+
+    csv_list = raw["csv_to_be_plotted"]
+    if not csv_list:
+        print("REMINDER: csv_to_be_plotted is empty — no result CSVs will be copied.")
+
     return RunHeapsimConfig(
         samples_file=samples_path,
         k=str(raw["k"]),
         phi=str(raw["phi"]),
         timestep_s=float(raw["timestep_s"]),
         maxsteps_s=int(raw["maxsteps_s"]),
+        csv_to_be_plotted=csv_list or [],
     )
 
 
@@ -119,30 +133,23 @@ def check_params_path():
 
 
 def copy_heapsim_results(
-    result_path,
-    simulation_index,
-    rate_data,
-    all_heapsim_results_path,
-    k_species,
-    phi_species,
+    csv_folder_path: Path,
+    simulation_index: int,
+    rate_data: dict[str, Any],
+    all_heapsim_results_path: Path,
+    config: RunHeapsimConfig,
 ):
-    simulation_path = os.path.join(
-        all_heapsim_results_path,
-        f"run_{simulation_index:03d}-k{rate_data[k_species]:.4e}-phi{rate_data[phi_species]:.4e}",
+    simulation_path = (
+        all_heapsim_results_path
+        / f"run_{simulation_index:03d}-k{rate_data[config.k]:.4e}-phi{rate_data[config.phi]:.4e}"
     )
-    os.makedirs(simulation_path, exist_ok=True)
-    overall_extraction_Cci = os.path.join(result_path, "overall_conversion_Cci.csv")
-    overall_extraction_Bbr = os.path.join(result_path, "overall_conversion_Bbr.csv")
-    extraction_CuII = os.path.join(result_path, "extraction_CuII.csv")
-    if overall_extraction_Cci:
-        shutil.copy(overall_extraction_Cci, simulation_path)
-        print(f"overall_conversion_Cci.csv copied to {simulation_path}")
-    if overall_extraction_Bbr:
-        shutil.copy(overall_extraction_Bbr, simulation_path)
-        print(f"overall_conversion_Bbr.csv copied to {simulation_path}")
-    if extraction_CuII:
-        shutil.copy(extraction_CuII, simulation_path)
-        print(f"extraction_CuII.csv copied to {simulation_path}")
+    simulation_path.mkdir(exist_ok=True)
+    for csv_file in config.csv_to_be_plotted:
+        csv_path = csv_folder_path / csv_file
+        if not csv_path.exists():
+            raise FileNotFoundError(f"CSV file not found: {csv_path}")
+        shutil.copy(csv_path, simulation_path)
+        print(f"{csv_file} copied to {simulation_path}")
 
 
 def timer(func):
@@ -158,6 +165,7 @@ def timer(func):
 def main():
     config_path = Path.cwd() / "config" / "run_heapsim.json"
     config = get_run_heapsim_config(config_path)
+    print(f"csv_to_be_plotted: {config.csv_to_be_plotted}")
     samples = load_samples(config.samples_file)
     print(f"Loaded {len(samples)} samples from {config.samples_file}")
     print(f"k: {config.k}, phi: {config.phi}")
@@ -190,12 +198,16 @@ def main():
 
         subprocess.run(["heapsim2D"], cwd=Path.cwd(), check=True)
 
-    #     timer(lambda: subprocess.run(["bash", heapsim_paths["run_sh_path"]],
-    #                                  cwd=heapsim_paths["heapsim_dir"], check=True))()
+        csv_folder_path = Path.cwd() / "result" / "csv"
 
-    #     copy_heapsim_results(heapsim_paths["result_path"], simulation_index,
-    #                          rate_data, all_heapsim_results_path, k_species, phi_species)
-    #     simulation_index += 1
+        copy_heapsim_results(
+            csv_folder_path,
+            simulation_index,
+            rate_data,
+            all_heapsim_results_path,
+            config,
+        )
+        simulation_index += 1
 
 
 if __name__ == "__main__":
