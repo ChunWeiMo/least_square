@@ -1,5 +1,4 @@
 import subprocess
-import os
 import json
 import shutil
 import time
@@ -90,24 +89,25 @@ def load_samples(samples_path: Path) -> list[tuple[float, float]]:
         return [(float(row[0]), float(row[1])) for row in reader if row]
 
 
+def _make_run_dir(base: Path, index: int, k: float, phi: float) -> Path:
+    """Build the output folder name for one parameter combination."""
+    return base / f"run_{index:03d}-k{k:.4e}-phi{phi:.4e}"
+
+
 def copy_heapsim_results(
-    csv_folder_path: Path,
-    simulation_index: int,
-    rate_data: dict[str, Any],
-    all_heapsim_results_path: Path,
-    config: RunHeapsimConfig,
-):
-    simulation_path = (
-        all_heapsim_results_path
-        / f"run_{simulation_index:03d}-k{rate_data[config.k]:.4e}-phi{rate_data[config.phi]:.4e}"
-    )
-    simulation_path.mkdir(exist_ok=True)
-    for csv_file in config.csv_to_be_plotted:
-        csv_path = csv_folder_path / csv_file
-        if not csv_path.exists():
-            raise FileNotFoundError(f"CSV file not found: {csv_path}")
-        shutil.copy(csv_path, simulation_path)
-        print(f"{csv_file} copied to {simulation_path}")
+    source_dir: Path,
+    target_dir: Path,
+    filenames: list[str],
+) -> None:
+    shutil.rmtree(target_dir, ignore_errors=True)
+    target_dir.mkdir(parents=True)
+
+    for name in filenames:
+        src = source_dir / name
+        if not src.exists():
+            raise FileNotFoundError(f"CSV file not found: {src}")
+        shutil.copy(src, target_dir)
+        print(f"{name} copied to {target_dir}")
 
 
 def main():
@@ -124,7 +124,10 @@ def main():
     print(f"enable_features_path: {params_path.enable_features}")
 
     all_heapsim_results_path = Path.cwd() / "data" / "all_heapsim_results"
-    all_heapsim_results_path.mkdir(exist_ok=True)
+    shutil.rmtree(all_heapsim_results_path, ignore_errors=True)
+    all_heapsim_results_path.mkdir(parents=True)
+
+    csv_folder_path = Path.cwd() / "result" / "csv"
 
     simulation_index = 0
     for k, phi in samples:
@@ -146,14 +149,12 @@ def main():
 
         subprocess.run(["heapsim2D"], cwd=Path.cwd(), check=True)
 
-        csv_folder_path = Path.cwd() / "result" / "csv"
+        run_dir = _make_run_dir(all_heapsim_results_path, simulation_index, k, phi)
 
         copy_heapsim_results(
             csv_folder_path,
-            simulation_index,
-            rate_data,
-            all_heapsim_results_path,
-            config,
+            run_dir,
+            config.csv_to_be_plotted,
         )
         simulation_index += 1
 
