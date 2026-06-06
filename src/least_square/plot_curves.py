@@ -114,6 +114,21 @@ def get_extraction_matrix():
 
 
 def plot_csv(emap: ExtractionMap, species: str):
+    plot_config_json = Path.cwd() / "config" / "plot_curves.json"
+    experiment_data_path = Path.cwd() / "data" / "experiment_data"
+    if plot_config_json.is_file():
+        with open(plot_config_json, "r") as f:
+            plot_config = json.load(f)
+            experiment_data_file = plot_config.get("experiment_data_file")
+            if experiment_data_file:
+                experiment_data_path = experiment_data_path / experiment_data_file
+            else:
+                print("Error: 'experiment_data_file' not found in plot_curves.json.")
+                print("Using default path for experiment data.")
+
+    with open(experiment_data_path, "r") as f:
+        experiment_data = pd.read_csv(f, header=None)
+
     with open("config/run_heapsim.json") as f:
         timestep_s = json.load(f)["timestep_s"]
 
@@ -121,6 +136,10 @@ def plot_csv(emap: ExtractionMap, species: str):
     ax.set_xlabel("Days")
     ax.set_ylabel(species)
 
+    ax.scatter(
+        experiment_data[0], experiment_data[1] * 0.01, c="red", label="Experiment"
+    )
+    
     for run in emap.runs:
         y = run.data[species]
 
@@ -133,7 +152,7 @@ def plot_csv(emap: ExtractionMap, species: str):
         ax.plot(
             days,
             y[1:],
-            label=f"run={int(run.run_id)}, k={run.k:.2f}, phi={run.phi:.2e}",
+            label=f"run={int(run.run_id)}, k={run.k:.2e}, phi={run.phi:.2e}",
         )
 
     ax.legend()
