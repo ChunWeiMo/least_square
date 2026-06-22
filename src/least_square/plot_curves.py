@@ -143,7 +143,11 @@ def plot_csv(emap: ExtractionMap, species: str):
 
 def main():
     extraction_map = get_extraction_matrix()
-    plot_csv(extraction_map, "solid_content_bacteria")
+
+    config_json = Path.cwd() / "config" / "plot_curves.json"
+    with open(config_json, "r") as f:
+        csv_to_be_plotted = json.load(f)["csv_to_be_plotted"]
+    plot_csv(extraction_map, csv_to_be_plotted)
 
 
 if __name__ == "__main__":
