@@ -1,5 +1,5 @@
 {
-    "mode": "restart",
+    "mode": "new",
     
     "_comment_mode": "What 'mode' can be:",
     "_mode_options": {

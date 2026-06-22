@@ -1,14 +1,16 @@
 {
-    "water": false,
+    "water": true,
     "solute": true,
     "solid": true,
     "adsorption": false,
     "desorption": false,
     "r_adb_Tu": false,
     "r_des_Tu": false,
-    "r_COx": false,
+    "r_COx": true,
     "r_Cci": false,
     "r_Bbr": false,
     "r_Cov": false,
-    "r_Meruane": true
+    "r_Meruane": false,
+    "r_FAT_1": false,
+    "r_FAT_2": false
 }

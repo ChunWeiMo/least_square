@@ -7,7 +7,7 @@
   "timestep_w": 1,
   "maxsteps_w": 20,
   "timestep_s": 180.0,
-  "maxsteps_s": 1200,
+  "maxsteps_s": 10,
   "flux_w": 2.222e-06,
   "rho_b": 1800,
   "theta_r": 0.1235,

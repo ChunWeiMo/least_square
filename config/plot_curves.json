@@ -1,4 +1,5 @@
 {
     "experiment_data_file": "../data/experiment_data/z1_phaseII_extraction.csv",
-    "timestep": 180
+    "timestep": 180,
+    "csv_to_be_plotted": "c_out_FeIII"
 }
