@@ -138,7 +138,14 @@ def plot_csv(emap: ExtractionMap, species: str):
 
     ax.legend()
     plt.title(species)
-    plt.show()
+
+    output_dir = Path.cwd() / "img"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    output_path = output_dir / f"{species}.png"
+
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    print(f"Plot saved to: {output_path}")
 
 
 def main():
