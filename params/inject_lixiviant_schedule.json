@@ -1,0 +1,10 @@
+{
+    "events": [
+        {
+            "species": "Tu",
+            "concentration": 0.000656858,
+            "start_step": 6810,
+            "end_step": 19200
+        }
+    ]
+}

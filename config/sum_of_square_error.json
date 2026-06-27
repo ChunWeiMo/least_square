@@ -1,5 +1,5 @@
 {
-    "experiment_data_number": 31,
+    "experiment_data_number": 146,
     "data_numbers_to_fit": 20,
     "polynomial_degree": 3,
     "timestep": 300,
