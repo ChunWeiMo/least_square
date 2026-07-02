@@ -2,8 +2,14 @@
     "events": [
         {
             "species": "Tu",
+            "concentration": 0.000249606,
+            "start_step": 6792,
+            "end_step": 9600
+        },
+        {
+            "species": "Tu",
             "concentration": 0.000656858,
-            "start_step": 6810,
+            "start_step": 9600,
             "end_step": 19200
         }
     ]

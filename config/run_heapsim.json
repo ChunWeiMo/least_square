@@ -1,6 +1,6 @@
 {
     "samples_file": "data/samples/samples.csv",
-    "k": "k_Cpy ",
+    "k": "k_Cpy",
     "phi": "phi_Cpy",
     "timestep_s": 3600,
     "maxsteps_s": 19200,
@@ -8,13 +8,17 @@
         "c_out_FeIII.csv",
         "c_out_FeII.csv",
         "c_out_Acid.csv",
+        "c_out_Tu.csv",
         "c_Acid.csv",
         "c_Cci.csv",
         "c_Bbr.csv",
         "c_COx.csv",
+        "c_Tu.csv",
         "extraction_CuII.csv",
         "solid_content_Bbr.csv",
         "solid_content_Cci.csv",
-        "solid_content_COx.csv"
+        "solid_content_COx.csv",
+        "solute_out_total_CuII.csv",
+        "solute_out_CuII.csv"
     ]
 }

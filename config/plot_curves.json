@@ -1,5 +1,5 @@
 {
-    "experiment_data_file": "Cu-extraction-UC_1.csv",
+    "experiment_data_file": "Cu-extraction-UC_4-test.csv",
     "timestep": 3600,
     "csv_to_be_plotted": "extraction_CuII"
 }
