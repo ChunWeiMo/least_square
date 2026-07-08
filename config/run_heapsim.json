@@ -1,7 +1,7 @@
 {
     "samples_file": "data/samples/samples.csv",
     "k": "k_Cpy",
-    "phi": "phi_Cpy",
+    "phi": "n_Cpy",
     "timestep_s": 3600,
     "maxsteps_s": 19200,
     "csv_to_be_plotted": [
@@ -14,6 +14,9 @@
         "c_Bbr.csv",
         "c_COx.csv",
         "c_Tu.csv",
+        "c_Acid.csv",
+        "c_FeIII.csv",
+        "c_FeII.csv",
         "extraction_CuII.csv",
         "solid_content_Bbr.csv",
         "solid_content_Cci.csv",

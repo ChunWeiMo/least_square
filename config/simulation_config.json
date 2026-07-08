@@ -6,7 +6,7 @@
         "continue": "Resume from the last saved step in the h5 file (default).",
         "restart": "Reset to step 0 but keep the same h5 filename (overwrite existing data)."
     },
-    "h5_file_path": "result/water-7200-low_bug_init.h5",
+    "h5_file_path": "result/result.h5",
     "save_mode": "w",
     "_save_mode_options": {
         "w": "overwrite",

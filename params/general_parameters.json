@@ -26,7 +26,7 @@
   "a_w_ratio": 0.1,
   "T_0": 298.15,
   "min_conc": 0,
-  "min_conc_aqueous": 1e-05,
+  "min_conc_aqueous": 1e-08,
   "min_conc_solid": 1e-08,
   "num_reactions": 34,
   "num_species": 35
