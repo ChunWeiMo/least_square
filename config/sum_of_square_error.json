@@ -1,10 +1,10 @@
 {
-    "experiment_data_number": 146,
-    "data_numbers_to_fit": 20,
-    "polynomial_degree": 3,
     "timestep": 300,
+    "max_day": 10,
+    "data_to_calculate_sse": "extraction_CuII",
     "save_path": "data/sum_of_square_error/sse.csv",
     "show_plot": true,
     "x_axis": "k",
-    "_x_axis": "phi"
+    "_x_axis": "phi",
+    "_comment": "SSE = sum (sim(t) - exp(t))^2 at experiment times with day <= max_day. Sim is interpolated onto experiment days. Omit max_day or set null to use all experiment points within the sim time range."
 }

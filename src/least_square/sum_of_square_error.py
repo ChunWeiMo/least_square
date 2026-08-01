@@ -5,8 +5,6 @@ from scipy.optimize import curve_fit
 import numpy as np
 from least_square.plot_curves import get_extraction_matrix
 from least_square.plot_curves import ExtractionMap
-from least_square.plot_curves import Run
-import os
 import sys
 from pathlib import Path
 
@@ -28,44 +26,74 @@ def curve_fitting_poly(x: list, y: list, degree: int) -> tuple:
 
 
 def calculate_x_axis(iterations, timestep=60):
-    duration = iterations * timestep / 86400
-    x = np.linspace(0, duration, iterations)
-    return x
+    """Time in days for each sample: 0, dt, 2dt, ..., (n-1)dt."""
+    return np.arange(iterations) * timestep / 86400.0
 
 
-def sum_of_square_error(func, params, experiment_data_filename, data_number=3):
-    cwd = Path().cwd()
-    data_path = cwd / "data" / "experiment_data" / experiment_data_filename
-    with open(data_path, "r") as f:
-        experiment_data = pd.read_csv(f, header=None)
-        experiment_data = experiment_data[0:data_number]
+def load_experiment_data(experiment_data_filename, max_day=None):
+    """Load experiment CSV (day, extraction %). Returns days and fraction extraction."""
+    data_path = Path.cwd() / "data" / "experiment_data" / experiment_data_filename
+    experiment_data = pd.read_csv(data_path, header=None)
 
-    x = experiment_data[0]
-    y = func(x, *params)
+    days = experiment_data[0].to_numpy(dtype=float)
+    y = experiment_data[1].to_numpy(dtype=float) * 0.01  # % -> fraction
 
-    sse = np.sum((y - experiment_data[1] * 0.01) ** 2)
-    return sse
+    if max_day is not None:
+        mask = days <= float(max_day)
+        days = days[mask]
+        y = y[mask]
+
+    return days, y
+
+
+def sum_of_square_error(sim_days, sim_y, exp_days, exp_y):
+    """
+    Direct sim vs experiment SSE at experiment times.
+
+    Simulation values are linearly interpolated onto experiment days.
+    Only experiment points inside the simulation time span are used
+    (avoids extrapolation past the last sim sample).
+    """
+    if len(exp_days) == 0:
+        raise ValueError("No experiment points left after filtering (check max_day).")
+
+    t_min = sim_days[0]
+    t_max = sim_days[-1]
+    mask = (exp_days >= t_min) & (exp_days <= t_max)
+    if not np.any(mask):
+        raise ValueError(f"No experiment points overlap sim time range [{t_min:.4g}, {t_max:.4g}] days.")
+
+    exp_days = exp_days[mask]
+    exp_y = exp_y[mask]
+    sim_at_exp_day = np.interp(exp_days, sim_days, sim_y)
+    return float(np.sum((sim_at_exp_day - exp_y) ** 2))
 
 
 def calculate_all_sse(extraction_matrix: ExtractionMap, config_json, experiment_data_file):
+    species = config_json.get("data_to_calculate_sse", "extraction_CuII")
+    max_day = config_json.get("max_day")
+    timestep = config_json["timestep"]
+
+    exp_days, exp_y = load_experiment_data(experiment_data_file, max_day=max_day)
+    print(
+        f"SSE uses {len(exp_days)} experiment points"
+        + (f" with day <= {max_day}" if max_day is not None else "")
+        + f" (t in [{exp_days.min():.4g}, {exp_days.max():.4g}])"
+    )
+
     for run in extraction_matrix.runs:
         print(f"Processing run_id: {run.run_id}, k:{run.k}, phi: {run.phi}")
-        iterations = len(run.data["extraction_CuII"])
-        step = iterations // config_json["data_numbers_to_fit"]
-        x = calculate_x_axis(iterations, config_json["timestep"])
+        if species not in run.data:
+            raise KeyError(f"Species '{species}' not found in run {run.run_id} data")
 
-        x = x[::step]
-        data_point = run.data["extraction_CuII"][0][::step].to_numpy()
-        params = curve_fitting_poly(x, data_point, config_json["polynomial_degree"])
-
-        run.sse = sum_of_square_error(func_poly, params, experiment_data_file, config_json["experiment_data_number"])
+        sim_y = run.data[species][0].to_numpy(dtype=float)
+        sim_days = calculate_x_axis(len(sim_y), timestep)
+        run.sse = sum_of_square_error(sim_days, sim_y, exp_days, exp_y)
+        print(f"  sse={run.sse:.6g}")
 
 
 def validate_setting_keys(setting_json):
     required_keys = [
-        "experiment_data_number",
-        "data_numbers_to_fit",
-        "polynomial_degree",
         "timestep",
         "save_path",
         "show_plot",
@@ -87,7 +115,7 @@ def runs_to_sse_df(extraction_matrix: ExtractionMap) -> pd.DataFrame:
         }
         for run in extraction_matrix.runs
     ]
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows).sort_values("run_id").reset_index(drop=True)
 
 
 def main():
@@ -108,22 +136,27 @@ def main():
         print(f"Error: {e}")
         sys.exit(1)
 
-    # print(f"{extraction_matrix}")
-
     calculate_all_sse(extraction_matrix, config_json, experiment_data_file)
     df_sse = runs_to_sse_df(extraction_matrix)
+    print(f"sse:\n{df_sse}")
 
-    save_path = Path.cwd() / "data" / "sum_of_square_error" / "sse.csv"
-    if save_path:
-        with open(save_path, "w") as f:
-            df_sse.to_csv(f)
+    save_path = Path(config_json["save_path"])
+    if not save_path.is_absolute():
+        save_path = Path.cwd() / save_path
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    df_sse.to_csv(save_path, index=False)
+    print(f"Saved: {save_path}")
 
     x_axis = config_json["x_axis"]
     if config_json["show_plot"]:
         fig, ax = plt.subplots()
         ax.scatter(df_sse[x_axis], df_sse["sse"])
-        ax.set_xlabel(f"{str(x_axis)}")
-        ax.set_ylabel("Sum of square")
+        ax.set_xlabel(str(x_axis))
+        ax.set_ylabel("Sum of square error")
+        title = "SSE"
+        if config_json.get("max_day") is not None:
+            title += f" (day ≤ {config_json['max_day']})"
+        ax.set_title(title)
         plt.show()
 
 
