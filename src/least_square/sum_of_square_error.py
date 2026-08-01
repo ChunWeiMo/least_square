@@ -4,16 +4,19 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import numpy as np
 from least_square.plot_curves import get_extraction_matrix
+from least_square.plot_curves import ExtractionMap
+from least_square.plot_curves import Run
 import os
 import sys
+from pathlib import Path
 
 
 def func_exp(x, a, b, c):
-    return a*np.exp(b*x) + c
+    return a * np.exp(b * x) + c
 
 
 def func_poly(x: list, *coefficients) -> list:
-    return sum([c*x**i for i, c in enumerate(coefficients)])
+    return sum([c * x**i for i, c in enumerate(coefficients)])
 
 
 def curve_fitting_poly(x: list, y: list, degree: int) -> tuple:
@@ -30,47 +33,61 @@ def calculate_x_axis(iterations, timestep=60):
     return x
 
 
-def sum_of_square_error(func, params, experiment_data_file, data_number=3):
-    with open(experiment_data_file, "r") as f:
+def sum_of_square_error(func, params, experiment_data_filename, data_number=3):
+    cwd = Path().cwd()
+    data_path = cwd / "data" / "experiment_data" / experiment_data_filename
+    with open(data_path, "r") as f:
         experiment_data = pd.read_csv(f, header=None)
         experiment_data = experiment_data[0:data_number]
 
     x = experiment_data[0]
-    print(f"x:\n{x}")
     y = func(x, *params)
 
-    sse = np.sum((y - experiment_data[1]*0.01)**2)
+    sse = np.sum((y - experiment_data[1] * 0.01) ** 2)
     return sse
 
 
-def calculate_all_sse(extraction_matrix, config_json, experiment_data_file):
-    for extraction in extraction_matrix:
-        print(f"Processing k:{extraction['k']} phi: {extraction['phi']}")
-        iterations = len(extraction["Cu_extraction"])
+def calculate_all_sse(extraction_matrix: ExtractionMap, config_json, experiment_data_file):
+    for run in extraction_matrix.runs:
+        print(f"Processing run_id: {run.run_id}, k:{run.k}, phi: {run.phi}")
+        iterations = len(run.data["extraction_CuII"])
         step = iterations // config_json["data_numbers_to_fit"]
         x = calculate_x_axis(iterations, config_json["timestep"])
 
         x = x[::step]
-        data_point = extraction["Cu_extraction"][::step]
+        data_point = run.data["extraction_CuII"][0][::step].to_numpy()
+        params = curve_fitting_poly(x, data_point, config_json["polynomial_degree"])
 
-        params = curve_fitting_poly(
-            x, data_point, config_json["polynomial_degree"])
-
-        extraction["sse"] = sum_of_square_error(
-            func_poly, params, experiment_data_file, config_json["experiment_data_number"])
-    df = pd.DataFrame(extraction_matrix)
-    print(f"sse:\n{df['sse']}")
-
-    return df
+        run.sse = sum_of_square_error(func_poly, params, experiment_data_file, config_json["experiment_data_number"])
 
 
 def validate_setting_keys(setting_json):
-    required_keys = ["experiment_data_number", "data_numbers_to_fit", "polynomial_degree",
-                     "timestep", "save_path", "show_plot", "x_axis"]
+    required_keys = [
+        "experiment_data_number",
+        "data_numbers_to_fit",
+        "polynomial_degree",
+        "timestep",
+        "save_path",
+        "show_plot",
+        "x_axis",
+    ]
     missing = [key for key in required_keys if key not in setting_json]
     if missing:
         return False, f"Missing setting keys: {missing}"
     return True, None
+
+
+def runs_to_sse_df(extraction_matrix: ExtractionMap) -> pd.DataFrame:
+    rows = [
+        {
+            "run_id": run.run_id,
+            "k": run.k,
+            "phi": run.phi,
+            "sse": run.sse,
+        }
+        for run in extraction_matrix.runs
+    ]
+    return pd.DataFrame(rows)
 
 
 def main():
@@ -91,9 +108,12 @@ def main():
         print(f"Error: {e}")
         sys.exit(1)
 
-    df_sse = calculate_all_sse(extraction_matrix, config_json, experiment_data_file)
+    # print(f"{extraction_matrix}")
 
-    save_path = os.path.abspath(config_json["save_path"])
+    calculate_all_sse(extraction_matrix, config_json, experiment_data_file)
+    df_sse = runs_to_sse_df(extraction_matrix)
+
+    save_path = Path.cwd() / "data" / "sum_of_square_error" / "sse.csv"
     if save_path:
         with open(save_path, "w") as f:
             df_sse.to_csv(f)
@@ -107,5 +127,5 @@ def main():
         plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -5,6 +5,8 @@ import pandas as pd
 import re
 import json
 from pathlib import Path
+from dataclasses import dataclass, field
+from typing import Any, Optional
 
 
 class ExtractionMap:
@@ -12,7 +14,14 @@ class ExtractionMap:
         self.runs = []
 
 
+@dataclass
 class Run:
+    run_id: float
+    k: float
+    phi: float
+    data: dict[str, Any] = field(default_factory=dict)
+    sse: Optional[float] = None
+
     def __init__(self, run_id, k, phi):
         self.run_id = run_id
         self.k = k
@@ -21,9 +30,7 @@ class Run:
 
 
 def get_k_phi_from_folder(folder):
-    match = re.search(
-        r"run_(\d+)-k([\d.]+(?:e[-+]?\d+)?)-phi([\d.]+(?:e[-+]?\d+)?)", folder
-    )
+    match = re.search(r"run_(\d+)-k([\d.]+(?:e[-+]?\d+)?)-phi([\d.]+(?:e[-+]?\d+)?)", folder)
     if match:
         run, k, phi = map(float, match.groups())
         print(k, phi)
@@ -136,10 +143,8 @@ def plot_csv(emap: ExtractionMap, species: str):
     ax.set_xlabel("Days")
     ax.set_ylabel(species)
 
-    ax.scatter(
-        experiment_data[0], experiment_data[1] * 0.01, c="red", label="Experiment"
-    )
-    
+    ax.scatter(experiment_data[0], experiment_data[1] * 0.01, c="red", label="Experiment")
+
     for run in emap.runs:
         y = run.data[species]
 
