@@ -111,7 +111,10 @@ def get_extraction_matrix():
         print(f"Processing run= {run.run_id}, k={run.k}, phi={run.phi}")
 
         for csv_file in os.listdir(folder):
-            key = csv_file.split(".")[0]
+            # Only real CSVs (skip Windows Zone.Identifier sidecars, etc.)
+            if not csv_file.endswith(".csv"):
+                continue
+            key = csv_file[:-4]  # strip ".csv"
             csv_data = pd.read_csv(folder / csv_file, header=None)
             run.data[key] = csv_data
 
